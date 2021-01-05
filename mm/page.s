@@ -7,6 +7,8 @@
 /*
  * page.s contains the low-level page-exception code.
  * the real work is done in mm.c
+ *
+ * 包含底层的页异常处理代码，实际的工作在 mm.c 中.
  */
 
 .globl _page_fault

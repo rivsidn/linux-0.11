@@ -22,7 +22,7 @@ extern int file_read(struct m_inode * inode, struct file * filp,
 extern int file_write(struct m_inode * inode, struct file * filp,
 		char * buf, int count);
 
-int sys_lseek(unsigned int fd,off_t offset, int origin)
+int sys_lseek(unsigned int fd, off_t offset, int origin)
 {
 	struct file * file;
 	int tmp;
@@ -33,15 +33,15 @@ int sys_lseek(unsigned int fd,off_t offset, int origin)
 	if (file->f_inode->i_pipe)
 		return -ESPIPE;
 	switch (origin) {
-		case 0:
+		case 0: //SEEK_SET
 			if (offset<0) return -EINVAL;
 			file->f_pos=offset;
 			break;
-		case 1:
+		case 1: //SEEK_CUR
 			if (file->f_pos+offset<0) return -EINVAL;
 			file->f_pos += offset;
 			break;
-		case 2:
+		case 2: //SEEK_END
 			if ((tmp=file->f_inode->i_size+offset) < 0)
 				return -EINVAL;
 			file->f_pos = tmp;
@@ -52,6 +52,7 @@ int sys_lseek(unsigned int fd,off_t offset, int origin)
 	return file->f_pos;
 }
 
+//read系统调用
 int sys_read(unsigned int fd,char * buf,int count)
 {
 	struct file * file;
@@ -61,6 +62,7 @@ int sys_read(unsigned int fd,char * buf,int count)
 		return -EINVAL;
 	if (!count)
 		return 0;
+	//TODO: 理解一下这个函数，等到读完memory.c之后再理解
 	verify_area(buf,count);
 	inode = file->f_inode;
 	if (inode->i_pipe)
@@ -70,6 +72,7 @@ int sys_read(unsigned int fd,char * buf,int count)
 	if (S_ISBLK(inode->i_mode))
 		return block_read(inode->i_zone[0],&file->f_pos,buf,count);
 	if (S_ISDIR(inode->i_mode) || S_ISREG(inode->i_mode)) {
+		//读数据的长度不能长度文件长度限制
 		if (count+file->f_pos > inode->i_size)
 			count = inode->i_size - file->f_pos;
 		if (count<=0)
@@ -80,11 +83,12 @@ int sys_read(unsigned int fd,char * buf,int count)
 	return -EINVAL;
 }
 
+//write系统调用
 int sys_write(unsigned int fd,char * buf,int count)
 {
 	struct file * file;
 	struct m_inode * inode;
-	
+
 	if (fd>=NR_OPEN || count <0 || !(file=current->filp[fd]))
 		return -EINVAL;
 	if (!count)

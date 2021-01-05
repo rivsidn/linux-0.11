@@ -54,6 +54,13 @@ extern long startup_time;
 
 /*
  * This is set up by the setup-routine at boot-time
+ * 
+ * boot 的时候通过 setup 程序设置
+ *
+ * 虚拟地址-(段映射)->线性地址-(页映射)->物理地址
+ * 由于此处的ds 段基地址是从 0 开始的，所以此时的虚拟地址、线性地址是
+ * 相同的；参照页映射的机制，此时的线性地址、物理地址也是相同的，所以
+ * 可以通过直接写地址的方式访问物理地址.
  */
 #define EXT_MEM_K (*(unsigned short *)0x90002)
 #define DRIVE_INFO (*(struct drive_info *)0x90080)
@@ -92,6 +99,7 @@ static void time_init(void)
 	BCD_TO_BIN(time.tm_mon);
 	BCD_TO_BIN(time.tm_year);
 	time.tm_mon--;
+	//核心就是设置startup_time
 	startup_time = kernel_mktime(&time);
 }
 
@@ -106,9 +114,17 @@ void main(void)		/* This really IS void, no error here. */
 /*
  * Interrupts are still disabled. Do necessary setups, then
  * enable them
+ *
+ * 此时中断是关闭的，做必要的初始化工作，然后使能他们.
  */
  	ROOT_DEV = ORIG_ROOT_DEV;
  	drive_info = DRIVE_INFO;
+/*
+ * 内存情况
+ *                         ^ buffer_memory_end
+ * |********|**************|**************************|
+ *       main_memory_start V                          V memory_end
+ */
 	memory_end = (1<<20) + (EXT_MEM_K<<10);
 	memory_end &= 0xfffff000;
 	if (memory_end > 16*1024*1024)
@@ -123,11 +139,15 @@ void main(void)		/* This really IS void, no error here. */
 #ifdef RAMDISK
 	main_memory_start += rd_init(main_memory_start, RAMDISK*1024);
 #endif
+	//内存初始化，参数为主内存起始
 	mem_init(main_memory_start,memory_end);
 	trap_init();
+	//begin 
+	//TODO: 块设备、字符设备、tty 初始化部分没读
 	blk_dev_init();
 	chr_dev_init();
 	tty_init();
+	//end
 	time_init();
 	sched_init();
 	buffer_init(buffer_memory_end);

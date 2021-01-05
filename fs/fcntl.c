@@ -33,12 +33,14 @@ static int dupfd(unsigned int fd, unsigned int arg)
 	return arg;
 }
 
+//复制文件描述符
 int sys_dup2(unsigned int oldfd, unsigned int newfd)
 {
 	sys_close(newfd);
 	return dupfd(oldfd,newfd);
 }
 
+//复制文件描述符
 int sys_dup(unsigned int fildes)
 {
 	return dupfd(fildes,0);

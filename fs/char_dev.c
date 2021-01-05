@@ -28,9 +28,11 @@ static int rw_tty(int rw,unsigned minor,char * buf,int count, off_t * pos)
 {
 	if (current->tty<0)
 		return -EPERM;
+	//TODO: 调用 rw_ttyx()，tty 这地方还是没掌握
 	return rw_ttyx(rw,current->tty,buf,count,pos);
 }
 
+//暂时都不支持...
 static int rw_ram(int rw,char * buf, int count, off_t *pos)
 {
 	return -EIO;
@@ -46,7 +48,7 @@ static int rw_kmem(int rw,char * buf, int count, off_t * pos)
 	return -EIO;
 }
 
-static int rw_port(int rw,char * buf, int count, off_t * pos)
+static int rw_port(int rw, char * buf, int count, off_t * pos)
 {
 	int i=*pos;
 
@@ -55,7 +57,8 @@ static int rw_port(int rw,char * buf, int count, off_t * pos)
 			put_fs_byte(inb(i),buf++);
 		else
 			outb(get_fs_byte(buf++),i);
-		i++;
+
+		i++;	//如果count不为1，还会继续往下一个端口写
 	}
 	i -= *pos;
 	*pos += i;
@@ -82,6 +85,7 @@ static int rw_memory(int rw, unsigned minor, char * buf, int count, off_t * pos)
 
 #define NRDEVS ((sizeof (crw_table))/(sizeof (crw_ptr)))
 
+//该文件围绕crw_table[]这个全局变量展开
 static crw_ptr crw_table[]={
 	NULL,		/* nodev */
 	rw_memory,	/* /dev/mem etc */

@@ -101,14 +101,19 @@ struct task_struct {
 	unsigned long close_on_exec;
 	struct file * filp[NR_OPEN];
 /* ldt for this task 0 - zero 1 - cs 2 - ds&ss */
+/* 该任务的局部描述符表 0 号没用；1 号代码段描述符；2 号数据段&栈段描述符 */
 	struct desc_struct ldt[3];
 /* tss for this task */
+/* 该任务的任务状态段描述符 */
 	struct tss_struct tss;
 };
 
 /*
  *  INIT_TASK is used to set up the first task table, touch at
  * your own risk!. Base=0, limit=0x9ffff (=640kB)
+ *
+ * INIT_TASK 用于设置第一个任务表，不要乱动，后果自负.
+ * Base=0, limit=0x9ffff(=640kB)
  */
 #define INIT_TASK \
 /* state etc */	{ 0,15,15, \
@@ -149,6 +154,15 @@ extern void wake_up(struct task_struct ** p);
 /*
  * Entry into gdt where to find first TSS. 0-nul, 1-cs, 2-ds, 3-syscall
  * 4-TSS0, 5-LDT0, 6-TSS1 etc ...
+ *
+ * 第一个TSS 在gdt 中的位置.
+ * 0 空描述符
+ * 1 代码段
+ * 2 数据段
+ * 3 syscall(TODO:什么地方用到？)
+ * 4 TSS0
+ * 5 LDT0
+ * 6 TSS1...
  */
 #define FIRST_TSS_ENTRY 4
 #define FIRST_LDT_ENTRY (FIRST_TSS_ENTRY+1)

@@ -382,6 +382,7 @@ int sys_nice(long increment)
 	return 0;
 }
 
+//调度程序初始化
 void sched_init(void)
 {
 	int i;
@@ -389,6 +390,7 @@ void sched_init(void)
 
 	if (sizeof(struct sigaction) != 16)
 		panic("Struct sigaction MUST be 16 bytes");
+	//TODO: next...
 	set_tss_desc(gdt+FIRST_TSS_ENTRY,&(init_task.task.tss));
 	set_ldt_desc(gdt+FIRST_LDT_ENTRY,&(init_task.task.ldt));
 	p = gdt+2+FIRST_TSS_ENTRY;

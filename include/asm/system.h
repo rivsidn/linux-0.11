@@ -30,12 +30,16 @@ __asm__ ("movw %%dx,%%ax\n\t" \
 	"o" (*(4+(char *) (gate_addr))), \
 	"d" ((char *) (addr)),"a" (0x00080000))
 
+//设置中断门，DPL为0
+//TODO: intr 和 trap 有什么区别？
 #define set_intr_gate(n,addr) \
 	_set_gate(&idt[n],14,0,addr)
 
+//设置陷阱门, DPL为0
 #define set_trap_gate(n,addr) \
 	_set_gate(&idt[n],15,0,addr)
 
+//设置陷阱们，DPL为3
 #define set_system_gate(n,addr) \
 	_set_gate(&idt[n],15,3,addr)
 

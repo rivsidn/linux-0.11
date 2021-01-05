@@ -108,14 +108,14 @@ static struct buffer_head * find_entry(struct m_inode ** dir,
 	*res_dir = NULL;
 	if (!namelen)
 		return NULL;
-/* check for '..', as we might have to do some "magic" for it */
+	/* check for '..', as we might have to do some "magic" for it */
 	if (namelen==2 && get_fs_byte(name)=='.' && get_fs_byte(name+1)=='.') {
-/* '..' in a pseudo-root results in a faked '.' (just change namelen) */
+		/* '..' in a pseudo-root results in a faked '.' (just change namelen) */
 		if ((*dir) == current->root)
 			namelen=1;
 		else if ((*dir)->i_num == ROOT_INO) {
-/* '..' over a mount-point results in 'dir' being exchanged for the mounted
-   directory-inode. NOTE! We set mounted, so that we can iput the new dir */
+			/* '..' over a mount-point results in 'dir' being exchanged for the mounted
+			   directory-inode. NOTE! We set mounted, so that we can iput the new dir */
 			sb=get_super((*dir)->i_dev);
 			if (sb->s_imount) {
 				iput(*dir);
@@ -333,6 +333,10 @@ struct m_inode * namei(const char * pathname)
  *	open_namei()
  *
  * namei for open - this is in fact almost the whole open-routine.
+ * 
+ * 输入参数: pathname, flag, mode
+ * 输出参数: res_inode
+ * 返回  值: 成功返回 0; 失败返回负值
  */
 int open_namei(const char * pathname, int flag, int mode,
 	struct m_inode ** res_inode)
@@ -668,6 +672,7 @@ int sys_unlink(const char * name)
 	struct buffer_head * bh;
 	struct dir_entry * de;
 
+	//dir 为顶层目录的 inode 节点
 	if (!(dir = dir_namei(name,&namelen,&basename)))
 		return -ENOENT;
 	if (!namelen) {
@@ -773,6 +778,7 @@ int sys_link(const char * oldname, const char * newname)
 	oldinode->i_nlinks++;
 	oldinode->i_ctime = CURRENT_TIME;
 	oldinode->i_dirt = 1;
+	//TODO：没明白此处为什么要释放oldinode节点
 	iput(oldinode);
 	return 0;
 }

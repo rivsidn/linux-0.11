@@ -162,13 +162,13 @@ repeat:
 			if ((*p)->pgrp != -pid)
 				continue;
 		}
-		switch ((*p)->state) {		//获取到了等待的子进程
-			case TASK_STOPPED:	//子进程已经停止
+		switch ((*p)->state) {
+			case TASK_STOPPED:
 				if (!(options & WUNTRACED))
 					continue;
 				put_fs_long(0x7f,stat_addr);
 				return (*p)->pid;
-			case TASK_ZOMBIE:	//子进程是僵尸进程
+			case TASK_ZOMBIE:
 				current->cutime += (*p)->utime;
 				current->cstime += (*p)->stime;
 				flag = (*p)->pid;
@@ -181,12 +181,12 @@ repeat:
 				continue;
 		}
 	}
-	if (flag) {				//存在对应的子进程
+	if (flag) {
 		if (options & WNOHANG)
 			return 0;
 		current->state=TASK_INTERRUPTIBLE;
 		schedule();
-		if (!(current->signal &= ~(1<<(SIGCHLD-1))))	//收到SIGCHLD信号
+		if (!(current->signal &= ~(1<<(SIGCHLD-1))))
 			goto repeat;
 		else
 			return -EINTR;

@@ -31,8 +31,10 @@ int sys_utime(char * filename, struct utimbuf * times)
 	if (times) {
 		actime = get_fs_long((unsigned long *) &times->actime);
 		modtime = get_fs_long((unsigned long *) &times->modtime);
-	} else
+	} else {
+		//times 为空时设置当前时间
 		actime = modtime = CURRENT_TIME;
+	}
 	inode->i_atime = actime;
 	inode->i_mtime = modtime;
 	inode->i_dirt = 1;
@@ -128,6 +130,7 @@ int sys_chown(const char * filename,int uid,int gid)
 		iput(inode);
 		return -EACCES;
 	}
+	//TODO: inode 什么时候根据i_dirt 与硬件同步
 	inode->i_uid=uid;
 	inode->i_gid=gid;
 	inode->i_dirt=1;
@@ -135,7 +138,7 @@ int sys_chown(const char * filename,int uid,int gid)
 	return 0;
 }
 
-int sys_open(const char * filename,int flag,int mode)
+int sys_open(const char * filename,int flag, int mode)
 {
 	struct m_inode * inode;
 	struct file * f;
@@ -159,23 +162,29 @@ int sys_open(const char * filename,int flag,int mode)
 		f->f_count=0;
 		return i;
 	}
-/* ttys are somewhat special (ttyxx major==4, tty major==5) */
-	if (S_ISCHR(inode->i_mode))
+	/* ttys are somewhat special (ttyxx major==4, tty major==5) */
+	if (S_ISCHR(inode->i_mode)) {
+		//TODO: ttyxx, tty 的特殊处理，tty设备是在什么时候创建的
 		if (MAJOR(inode->i_zone[0])==4) {
 			if (current->leader && current->tty<0) {
 				current->tty = MINOR(inode->i_zone[0]);
 				tty_table[current->tty].pgrp = current->pgrp;
 			}
-		} else if (MAJOR(inode->i_zone[0])==5)
+		} else if (MAJOR(inode->i_zone[0])==5) {
 			if (current->tty<0) {
 				iput(inode);
 				current->filp[fd]=NULL;
 				f->f_count=0;
 				return -EPERM;
 			}
-/* Likewise with block-devices: check for floppy_change */
-	if (S_ISBLK(inode->i_mode))
+		}
+	}
+	/* Likewise with block-devices: check for floppy_change */
+	if (S_ISBLK(inode->i_mode)) {
+		//TODO: inode->i_zone[0]？块设备是再什么时候创建的？
+		//设备号
 		check_disk_change(inode->i_zone[0]);
+	}
 	f->f_mode = inode->i_mode;
 	f->f_flags = flag;
 	f->f_count = 1;
@@ -195,6 +204,7 @@ int sys_close(unsigned int fd)
 
 	if (fd >= NR_OPEN)
 		return -EINVAL;
+	//close_on_exec 表示执行exec 之后需要关闭的描述符位图
 	current->close_on_exec &= ~(1<<fd);
 	if (!(filp = current->filp[fd]))
 		return -EINVAL;

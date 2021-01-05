@@ -24,9 +24,10 @@ static ioctl_ptr ioctl_table[]={
 	tty_ioctl,	/* /dev/ttyx */
 	tty_ioctl,	/* /dev/tty */
 	NULL,		/* /dev/lp */
-	NULL};		/* named pipes */
+	NULL		/* named pipes */
+};
 	
-
+//对终端IO进行控制
 int sys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
 {	
 	struct file * filp;

@@ -1,19 +1,26 @@
 /*
  * malloc.c --- a general purpose kernel memory allocator for Linux.
+ * 		一个通用的linux内核内存分配器
  * 
  * Written by Theodore Ts'o (tytso@mit.edu), 11/29/91
  *
  * This routine is written to be as fast as possible, so that it
  * can be called from the interrupt level.
+ * 该程序运行的很快，所以可以从中断中调用
  *
  * Limitations: maximum size of memory we can allocate using this routine
  *	is 4k, the size of a page in Linux.
+ * 限制: 通过这个程序我们能分配的最大内存是4k，一个Linux页面的大小
  *
  * The general game plan is that each page (called a bucket) will only hold
  * objects of a given size.  When all of the object on a page are released,
  * the page can be returned to the general free pool.  When malloc() is
  * called, it looks for the smallest bucket size which will fulfill its
  * request, and allocate a piece of memory from that bucket pool.
+ * 策略是每页(称为桶)只容纳固定大小的对象.
+ * 当该页的所有对象释放之后，该页会返回到通用的空闲池中.
+ * 当malloc()被调用的时候，它会查找最小能满足请求的桶大小，从空闲的桶池中
+ * 申请一部分内存.
  *
  * Each bucket has as its control block a bucket descriptor which keeps 
  * track of how many objects are in use on that page, and the free list
@@ -24,6 +31,7 @@
  * descriptor pages, since a page can hold 256 bucket descriptors (which
  * corresponds to 1 megabyte worth of bucket pages.)  If the kernel is using 
  * that much allocated memory, it's probably doing something wrong.  :-)
+ * 每个桶有他们自己的控制块描述符用于跟踪在该页上究竟有多少个对象.
  *
  * Note: malloc() and free() both call get_free_page() and free_page()
  *	in sections of code where interrupts are turned off, to allow
@@ -43,6 +51,11 @@
  *	system.  Except for the pages for the bucket descriptor page, the 
  *	extra pages will eventually get released back to the system, though,
  *	so it isn't all that bad.
+ *
+ * 存储桶(page)，存储桶描述符
+ * 每个存储桶(page)对应一个存储桶描述符，用于保存关于存储桶的信息
+ *
+ * TODO: 这个文件中的代码大体逻辑懂了，但是没有仔细分析...
  */
 
 #include <linux/kernel.h>
@@ -73,6 +86,9 @@ struct _bucket_dir {	/* 8 bytes */
  * on this list, some amount of temperance must be exercised here.
  *
  * Note that this list *must* be kept in order.
+ *
+ *
+ * 注意该链表必须是有序的.
  */
 struct _bucket_dir bucket_dir[] = {
 	{ 16,	(struct bucket_desc *) 0},
@@ -88,17 +104,22 @@ struct _bucket_dir bucket_dir[] = {
 
 /*
  * This contains a linked list of free bucket descriptor blocks
+ *
+ * 包含一个空闲的桶描述符链表
  */
 struct bucket_desc *free_bucket_desc = (struct bucket_desc *) 0;
 
 /*
  * This routine initializes a bucket description page.
+ *
+ * 该程序初始化桶描述符页
  */
 static inline void init_bucket_desc()
 {
 	struct bucket_desc *bdesc, *first;
 	int	i;
-	
+
+	//申请一页，初始化页上的所有bucket描述符
 	first = bdesc = (struct bucket_desc *) get_free_page();
 	if (!bdesc)
 		panic("Out of memory in init_bucket_desc()");
@@ -109,11 +130,14 @@ static inline void init_bucket_desc()
 	/*
 	 * This is done last, to avoid race conditions in case 
 	 * get_free_page() sleeps and this routine gets called again....
+	 *
+	 * 将这些描述符加入到 free_bucket_desc 中.
 	 */
 	bdesc->next = free_bucket_desc;
 	free_bucket_desc = first;
 }
 
+//内存申请程序
 void *malloc(unsigned int len)
 {
 	struct _bucket_dir	*bdir;
@@ -123,6 +147,8 @@ void *malloc(unsigned int len)
 	/*
 	 * First we search the bucket_dir to find the right bucket change
 	 * for this request.
+	 * 
+	 * 首先我们查找 bucket_dir 来查找合适的桶大小.
 	 */
 	for (bdir = bucket_dir; bdir->size; bdir++)
 		if (bdir->size >= len)
@@ -134,6 +160,8 @@ void *malloc(unsigned int len)
 	}
 	/*
 	 * Now we search for a bucket descriptor which has free space
+	 *
+	 * 此时我们查找有空闲空间的bucket 描述符
 	 */
 	cli();	/* Avoid race conditions */
 	for (bdesc = bdir->chain; bdesc; bdesc = bdesc->next) 
@@ -142,11 +170,14 @@ void *malloc(unsigned int len)
 	/*
 	 * If we didn't find a bucket with free space, then we'll 
 	 * allocate a new one.
+	 *
+	 * 如果我们没有找到有空闲空间的bucket，我们需要重新申请一个.
 	 */
 	if (!bdesc) {
 		char		*cp;
 		int		i;
 
+		//第一次需要调用 init_bucket_desc() 完成初始化
 		if (!free_bucket_desc)	
 			init_bucket_desc();
 		bdesc = free_bucket_desc;
@@ -178,6 +209,10 @@ void *malloc(unsigned int len)
  * search for the bucket descriptor.
  * 
  * We will #define a macro so that "free(x)" is becomes "free_s(x, 0)"
+ *
+ * 这是一个内存释放程序.
+ * 如果你知道释放对象的大小，free_s() 会通过这些信息加速桶描述符的查找.
+ * 我们会定义一个宏所以 "free(x)" 会变成 "free_s(x, 0)"
  */
 void free_s(void *obj, int size)
 {

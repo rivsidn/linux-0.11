@@ -11,6 +11,8 @@
 #include <asm/segment.h>
 #include <asm/system.h>
 
+//块设备写
+//TODO: block 是从哪部分开始算起的，一直不是很清楚
 int block_write(int dev, long * pos, char * buf, int count)
 {
 	int block = *pos >> BLOCK_SIZE_BITS;
@@ -44,6 +46,7 @@ int block_write(int dev, long * pos, char * buf, int count)
 	return written;
 }
 
+//块设备读
 int block_read(int dev, unsigned long * pos, char * buf, int count)
 {
 	int block = *pos >> BLOCK_SIZE_BITS;

@@ -22,6 +22,7 @@ SYSSIZE = 0x3000
 ! read errors will result in a unbreakable loop. Reboot by hand. It
 ! loads pretty fast by getting whole sectors at a time whenever possible.
 
+! 定义了6个全局变量
 .globl begtext, begdata, begbss, endtext, enddata, endbss
 .text
 begtext:
@@ -42,6 +43,7 @@ ENDSEG   = SYSSEG + SYSSIZE		! where to stop loading
 !		0x301 - first partition on first drive etc
 ROOT_DEV = 0x306
 
+! 告知链接程序，程序从start标号开始
 entry start
 start:
 	mov	ax,#BOOTSEG
@@ -52,9 +54,9 @@ start:
 	sub	si,si
 	sub	di,di
 	rep
-	movw
-	jmpi	go,INITSEG
-go:	mov	ax,cs
+	movw				! 将数据从 DS:SI->ES:DI，移动512字节
+	jmpi	go,INITSEG		! 跳转到 INITSEG 的标号 go 处执行
+go:	mov	ax,cs			! 此时的代码段为 INITSEG
 	mov	ds,ax
 	mov	es,ax
 ! put stack at 0x9ff00.
@@ -64,6 +66,7 @@ go:	mov	ax,cs
 ! load the setup-sectors directly after the bootblock.
 ! Note that 'es' is already set up.
 
+! 加载setup 部分
 load_setup:
 	mov	dx,#0x0000		! drive 0, head 0
 	mov	cx,#0x0002		! sector 2, track 0
@@ -74,22 +77,24 @@ load_setup:
 	mov	dx,#0x0000
 	mov	ax,#0x0000		! reset the diskette
 	int	0x13
-	j	load_setup
+	j	load_setup		! 重新设置磁盘之后再次执行加载动作
 
 ok_load_setup:
 
 ! Get disk drive parameters, specifically nr of sectors/track
+! 获取磁盘驱动参数，尤其是sectors/track数
 
 	mov	dl,#0x00
 	mov	ax,#0x0800		! AH=8 is get drive parameters
 	int	0x13
 	mov	ch,#0x00
-	seg cs
+	seg cs				! 表示下一条操作数在cs所指的段中
 	mov	sectors,cx
 	mov	ax,#INITSEG
 	mov	es,ax
 
 ! Print some inane message
+! 打印一些无意义的消息
 
 	mov	ah,#0x03		! read cursor pos
 	xor	bh,bh
@@ -246,7 +251,7 @@ msg1:
 	.ascii "Loading system ..."
 	.byte 13,10,13,10
 
-.org 508
+.org 508		! 表示下边语句从508开始
 root_dev:
 	.word ROOT_DEV
 boot_flag:

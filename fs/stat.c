@@ -12,6 +12,12 @@
 #include <linux/kernel.h>
 #include <asm/segment.h>
 
+/* 
+ * 获取文件信息
+ * 无论是 sys_stat() 还是 sys_fstat() 都是通过获取到 inode，
+ * 然后调用 cp_stat().
+ */
+
 static void cp_stat(struct m_inode * inode, struct stat * statbuf)
 {
 	struct stat tmp;
@@ -33,6 +39,7 @@ static void cp_stat(struct m_inode * inode, struct stat * statbuf)
 		put_fs_byte(((char *) &tmp)[i],&((char *) statbuf)[i]);
 }
 
+//通过文件名获取信息
 int sys_stat(char * filename, struct stat * statbuf)
 {
 	struct m_inode * inode;
@@ -44,6 +51,7 @@ int sys_stat(char * filename, struct stat * statbuf)
 	return 0;
 }
 
+//通过fd获取文件信息
 int sys_fstat(unsigned int fd, struct stat * statbuf)
 {
 	struct file * f;

@@ -42,12 +42,28 @@ extern int sys_close(int fd);
  * create_tables() parses the env- and arg-strings in new user
  * memory and creates the pointer tables from them, and puts their
  * addresses on the "stack", returning the new stack pointer value.
+ *
+ * create_tables() 解析env和arg 字符串，并创建指针表，并将指针表地址
+ * 放到"栈"上，返回新的栈指针.
+ * 执行完之后的栈应该是这样的:
+ * |------------|
+ * |envp[2]	|
+ * |envp[1]	|
+ * |envp[0]	|
+ * |------------|
+ * |argv[2]	|
+ * |argv[1]	|
+ * |argv[0]	|
+ * |envp	|
+ * |argv	|
+ * |argc	|
  */
-static unsigned long * create_tables(char * p,int argc,int envc)
+static unsigned long * create_tables(char * p, int argc, int envc)
 {
 	unsigned long *argv,*envp;
 	unsigned long * sp;
 
+	//堆栈指针以4字节为边界寻址，此处意思是sp为4的整数倍
 	sp = (unsigned long *) (0xfffffffc & (unsigned long) p);
 	sp -= envc+1;
 	envp = sp;
@@ -110,13 +126,17 @@ static unsigned long copy_strings(int argc,char ** argv,unsigned long *page,
 
 	if (!p)
 		return 0;	/* bullet-proofing */
+	//fs 就是用户态 ds
+	//如果数据来自内核，则需要设置fs 为内核态ds(new_fs).
 	new_fs = get_ds();
 	old_fs = get_fs();
 	if (from_kmem==2)
 		set_fs(new_fs);
 	while (argc-- > 0) {
+		//from_kmem==1 表示字符串数组来自内核态，字符串来自用户态
 		if (from_kmem == 1)
 			set_fs(new_fs);
+		//随着argc--，依次获取字符串的首地址
 		if (!(tmp = (char *)get_fs_long(((unsigned long *)argv)+argc)))
 			panic("argc is wrong");
 		if (from_kmem == 1)
@@ -130,6 +150,8 @@ static unsigned long copy_strings(int argc,char ** argv,unsigned long *page,
 			return 0;
 		}
 		while (len) {
+			//从高地址往低地址写
+			//TODO: get_free_page() 为什么要先 set_fs(old_fs)？
 			--p; --tmp; --len;
 			if (--offset < 0) {
 				offset = p % PAGE_SIZE;
@@ -151,7 +173,10 @@ static unsigned long copy_strings(int argc,char ** argv,unsigned long *page,
 	return p;
 }
 
-static unsigned long change_ldt(unsigned long text_size,unsigned long * page)
+//修改局部描述符表中的描述符基址和段限长，并将参数和环境变量页面放在数据段末端.
+//text_size 	执行文件头部中 a_text 字段给出的代码段长度值
+//page		参数和环境空间页面指针数组
+static unsigned long change_ldt(unsigned long text_size, unsigned long * page)
 {
 	unsigned long code_limit,data_limit,code_base,data_base;
 	int i;
@@ -161,13 +186,15 @@ static unsigned long change_ldt(unsigned long text_size,unsigned long * page)
 	data_limit = 0x4000000;
 	code_base = get_base(current->ldt[1]);
 	data_base = code_base;
+	//ldt[] 是如何设置的？
 	set_base(current->ldt[1],code_base);
 	set_limit(current->ldt[1],code_limit);
 	set_base(current->ldt[2],data_base);
 	set_limit(current->ldt[2],data_limit);
-/* make sure fs points to the NEW data segment */
+	/* make sure fs points to the NEW data segment */
 	__asm__("pushl $0x17\n\tpop %%fs"::);
 	data_base += data_limit;
+	//TODO: put_page()是如何工作的？
 	for (i=MAX_ARG_PAGES-1 ; i>=0 ; i--) {
 		data_base -= PAGE_SIZE;
 		if (page[i])
@@ -192,6 +219,7 @@ int do_execve(unsigned long * eip,long tmp,char * filename,
 	int sh_bang = 0;
 	unsigned long p=PAGE_SIZE*MAX_ARG_PAGES-4;
 
+	//eip[1] 是原代码 cs 寄存器内容，其中的段选择符号不可以是内核
 	if ((0xffff & eip[1]) != 0x000f)
 		panic("execve called from supervisor mode");
 	for (i=0 ; i<MAX_ARG_PAGES ; i++)	/* clear page-table */
@@ -200,7 +228,7 @@ int do_execve(unsigned long * eip,long tmp,char * filename,
 		return -ENOENT;
 	argc = count(argv);
 	envc = count(envp);
-	
+
 restart_interp:
 	if (!S_ISREG(inode->i_mode)) {	/* must be regular file */
 		retval = -EACCES;
@@ -227,6 +255,9 @@ restart_interp:
 		/*
 		 * This section does the #! interpretation.
 		 * Sorta complicated, but hopefully it will work.  -TYT
+		 *
+		 * 该部分用于 ‘#!’ 解释器
+		 * 有点复杂，但愿能够正常工作
 		 */
 
 		char buf[1023], *cp, *interp, *i_name, *i_arg;
@@ -315,7 +346,8 @@ restart_interp:
 			goto exec_error2;
 		}
 	}
-/* OK, This is the point of no return */
+	/* OK, This is the point of no return */
+	//TODO: 这句话怎么理解？
 	if (current->executable)
 		iput(current->executable);
 	current->executable = inode;
@@ -325,6 +357,7 @@ restart_interp:
 		if ((current->close_on_exec>>i)&1)
 			sys_close(i);
 	current->close_on_exec = 0;
+	//TODO: free_page_tables() ？？？
 	free_page_tables(get_base(current->ldt[1]),get_limit(0x0f));
 	free_page_tables(get_base(current->ldt[2]),get_limit(0x17));
 	if (last_task_used_math == current)
@@ -341,6 +374,10 @@ restart_interp:
 	i = ex.a_text+ex.a_data;
 	while (i&0xfff)
 		put_fs_byte(0,(char *) (i++));
+	//TODO: 什么时候将可执行文件读到内存来的？
+	//此处应该没读，但是通过executable 指向的inode 可以在执行到具体位置的
+	//时候过去读取指令.
+	//需要去看执行时候的操作.
 	eip[0] = ex.a_entry;		/* eip, magic happens :-) */
 	eip[3] = p;			/* stack pointer */
 	return 0;

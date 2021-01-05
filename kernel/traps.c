@@ -178,6 +178,7 @@ void do_reserved(long esp, long error_code)
 	die("reserved (15,17-47) error",esp,error_code);
 }
 
+//idt(中断描述符表)中设置中断描述符
 void trap_init(void)
 {
 	int i;
@@ -197,6 +198,7 @@ void trap_init(void)
 	set_trap_gate(12,&stack_segment);
 	set_trap_gate(13,&general_protection);
 	set_trap_gate(14,&page_fault);
+	// reserved 位于 kernel/asm.s 
 	set_trap_gate(15,&reserved);
 	set_trap_gate(16,&coprocessor_error);
 	for (i=17;i<48;i++)

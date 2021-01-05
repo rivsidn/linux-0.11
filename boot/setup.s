@@ -39,6 +39,7 @@ start:
 	xor	bh,bh
 	int	0x10		! save it in known place, con_init fetches
 	mov	[0],dx		! it from 0x90000.
+				! 将光标位置放到0x90000处，con_init 会来取
 
 ! Get memory size (extended mem, kB)
 
@@ -63,6 +64,7 @@ start:
 	mov	[12],cx
 
 ! Get hd0 data
+! 获取hd0 信息
 
 	mov	ax,#0x0000
 	mov	ds,ax
@@ -75,6 +77,7 @@ start:
 	movsb
 
 ! Get hd1 data
+! 获取hd1 信息
 
 	mov	ax,#0x0000
 	mov	ds,ax
@@ -105,6 +108,7 @@ no_disk1:
 is_disk1:
 
 ! now we want to move to protected mode ...
+! 现在我们希望进入保护模式...
 
 	cli			! no interrupts allowed !
 
@@ -131,7 +135,9 @@ end_move:
 	mov	ax,#SETUPSEG	! right, forgot this at first. didn't work :-)
 	mov	ds,ax
 	lidt	idt_48		! load idt with 0,0
+				! 加载中断描述符表
 	lgdt	gdt_48		! load gdt with whatever appropriate
+				! 加载全局描述符表
 
 ! that was painless, now we enable A20
 
@@ -154,6 +160,7 @@ end_move:
 	mov	al,#0x11		! initialization sequence
 	out	#0x20,al		! send it to 8259A-1
 	.word	0x00eb,0x00eb		! jmp $+2, jmp $+2
+					! cpu 空转，延时指令
 	out	#0xA0,al		! and to 8259A-2
 	.word	0x00eb,0x00eb
 	mov	al,#0x20		! start of hardware int's (0x20)
@@ -178,6 +185,8 @@ end_move:
 	.word	0x00eb,0x00eb
 	out	#0xA1,al
 
+! 此时，屏蔽了中断控制器(主|从)的所有中断请求
+
 ! well, that certainly wasn't fun :-(. Hopefully it works, and we don't
 ! need no steenking BIOS anyway (except for the initial loading :-).
 ! The BIOS-routine wants lots of unnecessary data, and it's less
@@ -190,7 +199,9 @@ end_move:
 
 	mov	ax,#0x0001	! protected mode (PE) bit
 	lmsw	ax		! This is it!
+				! 真正开启保护模式
 	jmpi	0,8		! jmp offset 0 of segment 8 (cs)
+				! 跳转到cs段偏移地址0的地方执行
 
 ! This routine checks that the keyboard command queue is empty
 ! No timeout is used - if this hangs there is something wrong with
@@ -204,16 +215,19 @@ empty_8042:
 
 gdt:
 	.word	0,0,0,0		! dummy
+				! 第一个描述符，空的，不用
 
 	.word	0x07FF		! 8Mb - limit=2047 (2048*4096=8Mb)
 	.word	0x0000		! base address=0
 	.word	0x9A00		! code read/exec
 	.word	0x00C0		! granularity=4096, 386
+				! 代码段
 
 	.word	0x07FF		! 8Mb - limit=2047 (2048*4096=8Mb)
 	.word	0x0000		! base address=0
 	.word	0x9200		! data read/write
 	.word	0x00C0		! granularity=4096, 386
+				! 数据段
 
 idt_48:
 	.word	0			! idt limit=0
@@ -222,6 +236,8 @@ idt_48:
 gdt_48:
 	.word	0x800		! gdt limit=2048, 256 GDT entries
 	.word	512+gdt,0x9	! gdt base = 0X9xxxx
+				! 0x0009<<16+0x0200+gdt = 0x90200+gdt
+				! 此时的地址是直接的线性地址，不依赖于段描述符偏移 
 	
 .text
 endtext:

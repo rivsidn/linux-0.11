@@ -135,13 +135,13 @@ int copy_process(int nr,long ebp,long edi,long esi,long gs,long none,
 int find_empty_process(void)
 {
 	int i;
-	//寻找pid, 该pid 不能与当前已存在进程的pid号重复
+
 	repeat:
 		if ((++last_pid)<0) last_pid=1;
 		for(i=0 ; i<NR_TASKS ; i++)
 			if (task[i] && task[i]->pid == last_pid) goto repeat;
 	for(i=1 ; i<NR_TASKS ; i++)
-		if (!task[i])			//寻找空的task[i]结构体
+		if (!task[i])
 			return i;
 	return -EAGAIN;
 }

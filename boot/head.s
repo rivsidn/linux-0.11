@@ -15,12 +15,12 @@
 .globl _idt,_gdt,_pg_dir,_tmp_floppy_area
 _pg_dir:
 startup_32:
-	movl $0x10,%eax
+	movl $0x10,%eax		# 0x10为数据段
 	mov %ax,%ds
 	mov %ax,%es
 	mov %ax,%fs
 	mov %ax,%gs
-	lss _stack_start,%esp
+	lss _stack_start,%esp	# 设置栈，此时可以访问全局符号表
 	call setup_idt
 	call setup_gdt
 	movl $0x10,%eax		# reload all the segment registers
@@ -28,7 +28,7 @@ startup_32:
 	mov %ax,%es		# reloaded in 'setup_gdt'
 	mov %ax,%fs
 	mov %ax,%gs
-	lss _stack_start,%esp
+	lss _stack_start,%esp	# TODO: 为什么此处可以访问_stack_start，编译好的代码是如何分段的？
 	xorl %eax,%eax
 1:	incl %eax		# check that A20 really IS enabled
 	movl %eax,0x000000	# loop forever if it isn't
@@ -44,7 +44,7 @@ startup_32:
 	andl $0x80000011,%eax	# Save PG,PE,ET
 /* "orl $0x10020,%eax" here for 486 might be good */
 	orl $2,%eax		# set MP
-	movl %eax,%cr0
+	movl %eax,%cr0		# TODO: 检查协处理器这地方暂时没看，没用
 	call check_x87
 	jmp after_page_tables
 
@@ -74,14 +74,21 @@ check_x87:
  *  are enabled elsewhere, when we can be relatively
  *  sure everything is ok. This routine will be over-
  *  written by the page tables.
+ *  
+ *  设置中断描述符表，每个描述符都指向ignore_int 函数，然后加载idt.
+ *  每个模块会加载自己的中断处理函数.
+ *  中断在当我们觉的所有的事情都ok了的时候再使能.
+ *  该程序会被页表覆盖.
+ *
+ *  构造中断描述符
  */
 setup_idt:
-	lea ignore_int,%edx
+	lea ignore_int,%edx	/* lea 取偏移地址 */
 	movl $0x00080000,%eax
 	movw %dx,%ax		/* selector = 0x0008 = cs */
 	movw $0x8E00,%dx	/* interrupt gate - dpl=0, present */
 
-	lea _idt,%edi
+	lea _idt,%edi		/* 设置256个interrupt gate */
 	mov $256,%ecx
 rp_sidt:
 	movl %eax,(%edi)
@@ -110,6 +117,8 @@ setup_gdt:
  * I put the kernel page tables right after the page directory,
  * using 4 of them to span 16 Mb of physical memory. People with
  * more than 16MB will have to expand this.
+ *
+ * 将页表放在页目录之后，用4个页表，表示16M物理地址.
  */
 .org 0x1000
 pg0:
@@ -130,35 +139,36 @@ pg3:
  * on a 64kB border.
  */
 _tmp_floppy_area:
-	.fill 1024,1,0
+	.fill 1024,1,0		# 保留1024项，每项1字节，填充数值0
 
 after_page_tables:
 	pushl $0		# These are the parameters to main :-)
 	pushl $0
 	pushl $0
 	pushl $L6		# return address for main, if it decides to.
-	pushl $_main
+	pushl $_main		# 跳转到main执行  TODO: 为什么此处可以跳转到 main 执行
 	jmp setup_paging
 L6:
 	jmp L6			# main should never return here, but
 				# just in case, we know what happens.
 
 /* This is the default interrupt "handler" :-) */
+/* 默认的中断处理程序 */
 int_msg:
 	.asciz "Unknown interrupt\n\r"
 .align 2
 ignore_int:
-	pushl %eax
+	pushl %eax		# 压栈
 	pushl %ecx
 	pushl %edx
 	push %ds
 	push %es
 	push %fs
-	movl $0x10,%eax
+	movl $0x10,%eax		# 设置为数据段描述符
 	mov %ax,%ds
 	mov %ax,%es
 	mov %ax,%fs
-	pushl $int_msg
+	pushl $int_msg		# TODO : 为什么可以这样设置参数？
 	call _printk
 	popl %eax
 	pop %fs
@@ -172,6 +182,7 @@ ignore_int:
 
 /*
  * Setup_paging
+ * 建立分页
  *
  * This routine sets up paging by setting the page bit
  * in cr0. The page tables are set up, identity-mapping
@@ -194,16 +205,18 @@ ignore_int:
  * some kind of marker at them (search for "16Mb"), but I
  * won't guarantee that's all :-( )
  */
-.align 2
+.align 2				/* 按照2^2 方式对齐 */
 setup_paging:
 	movl $1024*5,%ecx		/* 5 pages - pg_dir+4 page tables */
 	xorl %eax,%eax
 	xorl %edi,%edi			/* pg_dir is at 0x000 */
-	cld;rep;stosl
+	cld;rep;stosl			/* stosl 将eax内容存到es:edi，清空5页 */
+# 设置页目录
 	movl $pg0+7,_pg_dir		/* set present bit/user r/w */
 	movl $pg1+7,_pg_dir+4		/*  --------- " " --------- */
 	movl $pg2+7,_pg_dir+8		/*  --------- " " --------- */
 	movl $pg3+7,_pg_dir+12		/*  --------- " " --------- */
+# 设置页表
 	movl $pg3+4092,%edi
 	movl $0xfff007,%eax		/*  16Mb - 4096 + 7 (r/w user,p) */
 	std
@@ -232,7 +245,7 @@ gdt_descr:
 _idt:	.fill 256,8,0		# idt is uninitialized
 
 _gdt:	.quad 0x0000000000000000	/* NULL descriptor */
-	.quad 0x00c09a0000000fff	/* 16Mb */
-	.quad 0x00c0920000000fff	/* 16Mb */
+	.quad 0x00c09a0000000fff	/* 16Mb */	//代码段
+	.quad 0x00c0920000000fff	/* 16Mb */	//数据段
 	.quad 0x0000000000000000	/* TEMPORARY - don't use */
 	.fill 252,8,0			/* space for LDT's and TSS's etc */
