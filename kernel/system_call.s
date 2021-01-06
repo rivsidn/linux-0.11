@@ -78,7 +78,7 @@ reschedule:
 	jmp _schedule
 .align 2
 _system_call:
-	cmpl $nr_system_calls-1,%eax
+	cmpl $nr_system_calls-1,%eax	# eax 中是调用号
 	ja bad_sys_call
 	push %ds
 	push %es
@@ -208,7 +208,7 @@ _sys_execve:
 _sys_fork:
 	call _find_empty_process
 	testl %eax,%eax
-	js 1f
+	js 1f			# 如果返回值为负值，则跳转到ret执行
 	push %gs
 	pushl %esi
 	pushl %edi

@@ -87,6 +87,10 @@ struct d_inode {
 	unsigned long i_time;
 	unsigned char i_gid;
 	unsigned char i_nlinks;
+	//i_zone[] 为short类型，存储着对应的block号，其中:
+	//0-6 为直接映射块
+	//7   为一次间接映射块
+	//8   为二次间接映射块
 	unsigned short i_zone[9];
 };
 

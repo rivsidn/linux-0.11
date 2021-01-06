@@ -19,6 +19,7 @@ int sync_dev(int dev);
 void wait_for_keypress(void);
 
 /* set_bit uses setb, as gas doesn't recognize setc */
+//测试第几位是否设置，可以理解成是 test_bit()
 #define set_bit(bitnr,addr) ({ \
 register int __res __asm__("ax"); \
 __asm__("bt %2,%3;setb %%al":"=a" (__res):"a" (0),"r" (bitnr),"m" (*(addr))); \
@@ -53,6 +54,7 @@ static void wait_on_super(struct super_block * sb)
 	sti();
 }
 
+//super_block表中获取对应的super_block块
 struct super_block * get_super(int dev)
 {
 	struct super_block * s;
@@ -89,6 +91,8 @@ void put_super(int dev)
 	}
 	lock_super(sb);
 	sb->s_dev = 0;
+	//释放i节点映射和磁盘映射高速缓存
+	//TODO: 文件的高速缓存如何处理？
 	for(i=0;i<I_MAP_SLOTS;i++)
 		brelse(sb->s_imap[i]);
 	for(i=0;i<Z_MAP_SLOTS;i++)
@@ -139,6 +143,7 @@ static struct super_block * read_super(int dev)
 	for (i=0;i<Z_MAP_SLOTS;i++)
 		s->s_zmap[i] = NULL;
 	block=2;
+	//读取i节点映射和逻辑块映射
 	for (i=0 ; i < s->s_imap_blocks ; i++)
 		if (s->s_imap[i]=bread(dev,block))
 			block++;
@@ -158,12 +163,14 @@ static struct super_block * read_super(int dev)
 		free_super(s);
 		return NULL;
 	}
+	//TODO: 这块怎么理解？
 	s->s_imap[0]->b_data[0] |= 1;
 	s->s_zmap[0]->b_data[0] |= 1;
 	free_super(s);
 	return s;
 }
 
+//卸载
 int sys_umount(char * dev_name)
 {
 	struct m_inode * inode;
@@ -180,10 +187,12 @@ int sys_umount(char * dev_name)
 	iput(inode);
 	if (dev==ROOT_DEV)
 		return -EBUSY;
+	//检测是否符合条件
 	if (!(sb=get_super(dev)) || !(sb->s_imount))
 		return -ENOENT;
 	if (!sb->s_imount->i_mount)
 		printk("Mounted inode has i_mount=0\n");
+	//查找i节点，看是设备是否正在被使用
 	for (inode=inode_table+0 ; inode<inode_table+NR_INODE ; inode++)
 		if (inode->i_dev==dev && inode->i_count)
 				return -EBUSY;
@@ -197,15 +206,19 @@ int sys_umount(char * dev_name)
 	return 0;
 }
 
+//挂载
+//命令：mount /dev/sdb1 /mnt
 int sys_mount(char * dev_name, char * dir_name, int rw_flag)
 {
 	struct m_inode * dev_i, * dir_i;
 	struct super_block * sb;
 	int dev;
 
+	//获取设备文件的inode节点
 	if (!(dev_i=namei(dev_name)))
 		return -ENOENT;
 	dev = dev_i->i_zone[0];
+	//只有块设备才能挂载
 	if (!S_ISBLK(dev_i->i_mode)) {
 		iput(dev_i);
 		return -EPERM;
@@ -217,6 +230,7 @@ int sys_mount(char * dev_name, char * dir_name, int rw_flag)
 		iput(dir_i);
 		return -EBUSY;
 	}
+	//必须将块设备挂载到目录上
 	if (!S_ISDIR(dir_i->i_mode)) {
 		iput(dir_i);
 		return -EPERM;
@@ -233,6 +247,8 @@ int sys_mount(char * dev_name, char * dir_name, int rw_flag)
 		iput(dir_i);
 		return -EPERM;
 	}
+	//超级块通过s_imount与对应的目录相关联
+	//注意此处的s_imount是一个 m_inode 类型的指针
 	sb->s_imount=dir_i;
 	dir_i->i_mount=1;
 	dir_i->i_dirt=1;		/* NOTE! we don't iput(dir_i) */
@@ -258,6 +274,7 @@ void mount_root(void)
 		p->s_lock = 0;
 		p->s_wait = NULL;
 	}
+	//获取根设备的super block
 	if (!(p=read_super(ROOT_DEV)))
 		panic("Unable to mount root");
 	if (!(mi=iget(ROOT_DEV,ROOT_INO)))

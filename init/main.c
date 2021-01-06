@@ -142,19 +142,19 @@ void main(void)		/* This really IS void, no error here. */
 	//内存初始化，参数为主内存起始
 	mem_init(main_memory_start,memory_end);
 	trap_init();
-	//begin 
 	//TODO: 块设备、字符设备、tty 初始化部分没读
 	blk_dev_init();
 	chr_dev_init();
 	tty_init();
-	//end
 	time_init();
 	sched_init();
+	//TODO: 下边三个函数没读
 	buffer_init(buffer_memory_end);
 	hd_init();
 	floppy_init();
 	sti();
 	move_to_user_mode();
+	//TODO: next 0...
 	if (!fork()) {		/* we count on this going ok */
 		init();
 	}
@@ -185,10 +185,12 @@ static char * envp_rc[] = { "HOME=/", NULL };
 static char * argv[] = { "-/bin/sh",NULL };
 static char * envp[] = { "HOME=/usr/root", NULL };
 
+//1 号进程执行流程
 void init(void)
 {
 	int pid,i;
 
+	//TODO: setup() 函数...
 	setup((void *) &drive_info);
 	(void) open("/dev/tty0",O_RDWR,0);
 	(void) dup(0);
