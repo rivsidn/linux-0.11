@@ -154,7 +154,7 @@ void main(void)		/* This really IS void, no error here. */
 	floppy_init();
 	sti();
 	move_to_user_mode();
-	//TODO: next 0...
+	//fork()在本文件通过_syscall0()宏定义
 	if (!fork()) {		/* we count on this going ok */
 		init();
 	}
@@ -202,11 +202,12 @@ void init(void)
 		close(0);
 		if (open("/etc/rc",O_RDONLY,0))
 			_exit(1);
+		//TODO: argv_rc, envp_rc 与下边 argv, envp 差异？
 		execve("/bin/sh",argv_rc,envp_rc);
 		_exit(2);
 	}
 	if (pid>0)
-		while (pid != wait(&i))
+		while (pid != wait(&i))		//1号进程等待2号进程退出
 			/* nothing */;
 	while (1) {
 		if ((pid=fork())<0) {

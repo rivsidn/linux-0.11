@@ -419,7 +419,7 @@ static int share_page(unsigned long address)
 	return 0;
 }
 
-//TODO: 此时的address 是什么地址
+//此处的 address 是线性地址
 void do_no_page(unsigned long error_code,unsigned long address)
 {
 	int nr[4];
@@ -429,6 +429,8 @@ void do_no_page(unsigned long error_code,unsigned long address)
 
 	address &= 0xfffff000;
 	tmp = address - current->start_code;
+	//如果是没有可执行文件或者此时大于数据段的长度，不需要从
+	//磁盘中获取内容，可以直接返回.
 	if (!current->executable || tmp >= current->end_data) {
 		get_empty_page(address);
 		return;
@@ -454,7 +456,7 @@ void do_no_page(unsigned long error_code,unsigned long address)
 		tmp--;
 		*(char *)tmp = 0;
 	}
-	//建立page，address映射
+	//建立page，address(线性地址)映射
 	if (put_page(page,address))
 		return;
 	free_page(page);

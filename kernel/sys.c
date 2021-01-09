@@ -165,6 +165,7 @@ int sys_times(struct tms * tbuf)
 	return jiffies;
 }
 
+//TODO:程序加载到内存是如何执行的？加载到内存什么样子？
 int sys_brk(unsigned long end_data_seg)
 {
 	if (end_data_seg >= current->end_code &&

@@ -46,11 +46,11 @@ extern int sys_close(int fd);
  * create_tables() 解析env和arg 字符串，并创建指针表，并将指针表地址
  * 放到"栈"上，返回新的栈指针.
  * 执行完之后的栈应该是这样的:
- * |------------|
+ * |null--------|
  * |envp[2]	|
  * |envp[1]	|
  * |envp[0]	|
- * |------------|
+ * |null--------|
  * |argv[2]	|
  * |argv[1]	|
  * |argv[0]	|
@@ -181,12 +181,15 @@ static unsigned long change_ldt(unsigned long text_size, unsigned long * page)
 	unsigned long code_limit,data_limit,code_base,data_base;
 	int i;
 
+	//代码段长度取整
 	code_limit = text_size+PAGE_SIZE -1;
 	code_limit &= 0xFFFFF000;
-	data_limit = 0x4000000;
+	data_limit = 0x4000000;	//64M
 	code_base = get_base(current->ldt[1]);
 	data_base = code_base;
-	//ldt[] 是如何设置的？
+	//设置代码段和数据段
+	//也就是说此时的 code_limit 是实际的代码段长度
+	//data_limit 为64M
 	set_base(current->ldt[1],code_base);
 	set_limit(current->ldt[1],code_limit);
 	set_base(current->ldt[2],data_base);
@@ -194,7 +197,7 @@ static unsigned long change_ldt(unsigned long text_size, unsigned long * page)
 	/* make sure fs points to the NEW data segment */
 	__asm__("pushl $0x17\n\tpop %%fs"::);
 	data_base += data_limit;
-	//TODO: put_page()是如何工作的？
+	//将page放到64M空间的末尾，此时工作在内核态.
 	for (i=MAX_ARG_PAGES-1 ; i>=0 ; i--) {
 		data_base -= PAGE_SIZE;
 		if (page[i])
@@ -205,6 +208,8 @@ static unsigned long change_ldt(unsigned long text_size, unsigned long * page)
 
 /*
  * 'do_execve()' executes a new program.
+ *
+ * 'do_execve()' 执行一个新程序
  */
 int do_execve(unsigned long * eip,long tmp,char * filename,
 	char ** argv, char ** envp)
@@ -357,7 +362,11 @@ restart_interp:
 		if ((current->close_on_exec>>i)&1)
 			sys_close(i);
 	current->close_on_exec = 0;
-	//TODO: free_page_tables() ？？？
+	//TODO: 这部分什么意思？梳理一下，为什么此处要free
+	//	写时复制指的是什么？在什么时候生效
+	//根据指定的基地址和长，释放原来进程代码段和数据段所对应的内存页表指定的内存块和内页表本身.
+	//此时执行进程并没有占用内存区任何页面，执行的时候会引起内存管
+	//理程序执行缺页处理为其申请内存页面，将程序读入内存.
 	free_page_tables(get_base(current->ldt[1]),get_limit(0x0f));
 	free_page_tables(get_base(current->ldt[2]),get_limit(0x17));
 	if (last_task_used_math == current)
@@ -374,10 +383,8 @@ restart_interp:
 	i = ex.a_text+ex.a_data;
 	while (i&0xfff)
 		put_fs_byte(0,(char *) (i++));
-	//TODO: 什么时候将可执行文件读到内存来的？
-	//此处应该没读，但是通过executable 指向的inode 可以在执行到具体位置的
-	//时候过去读取指令.
-	//需要去看执行时候的操作.
+	//此处的a_entry 处并没有对应的page，访问的时候势必会造成页异常.
+	//造成页异常之后，在do_no_page() 中将代码、数据读取到内存中.
 	eip[0] = ex.a_entry;		/* eip, magic happens :-) */
 	eip[3] = p;			/* stack pointer */
 	return 0;

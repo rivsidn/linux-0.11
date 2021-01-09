@@ -49,8 +49,10 @@ int copy_mem(int nr,struct task_struct * p)
 		panic("We don't support separate I&D");
 	if (data_limit < code_limit)
 		panic("Bad data_limit");
+	//新进程在线性地址中将中的基地址等于64MB*任务号
 	new_data_base = new_code_base = nr * 0x4000000;
 	p->start_code = new_code_base;
+	//此处设置新进程的ldt，只需要设置base，limit 是相同的
 	set_base(p->ldt[1],new_code_base);
 	set_base(p->ldt[2],new_data_base);
 	if (copy_page_tables(old_data_base,new_data_base,data_limit)) {
@@ -72,7 +74,6 @@ int copy_process(int nr,long ebp,long edi,long esi,long gs,		//_sys_fork 中压�
 		long ebx,long ecx,long edx, long fs,long es,long ds,	//_system_call 中压入栈
 		long eip,long cs,long eflags,long esp,long ss)		//int指令，中断处理cpu自动压入
 {
-	//TODO: next 1...
 	struct task_struct *p;
 	int i;
 	struct file *f;
@@ -97,7 +98,7 @@ int copy_process(int nr,long ebp,long edi,long esi,long gs,		//_sys_fork 中压�
 	p->tss.ss0 = 0x10;
 	p->tss.eip = eip;
 	p->tss.eflags = eflags;
-	p->tss.eax = 0;
+	p->tss.eax = 0;		//所以新的进程返回值为 0
 	p->tss.ecx = ecx;
 	p->tss.edx = edx;
 	p->tss.ebx = ebx;

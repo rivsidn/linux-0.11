@@ -68,6 +68,7 @@ extern void hd_interrupt(void);
 extern void rd_load(void);
 
 /* This may be used only once, enforced by 'static int callable' */
+/* 该函数通过静态变量'static int callable'确保只能调用一次 */
 int sys_setup(void * BIOS)
 {
 	static int callable = 1;
