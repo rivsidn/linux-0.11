@@ -48,6 +48,8 @@ void do_rd_request(void)
 
 /*
  * Returns amount of memory which needs to be reserved.
+ *
+ * 返回需要保留的内存大小
  */
 long rd_init(long mem_start, int length)
 {
@@ -92,6 +94,7 @@ void rd_load(void)
 	brelse(bh);
 	if (s.s_magic != SUPER_MAGIC)
 		/* No ram disk image present, assume normal floppy boot */
+		/* 没有ramdisk镜像文件，执行正常的软盘引导 */
 		return;
 	nblocks = s.s_nzones << s.s_log_zone_size;
 	if (nblocks > (rd_length >> BLOCK_SIZE_BITS)) {

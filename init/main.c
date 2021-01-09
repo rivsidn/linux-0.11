@@ -182,6 +182,7 @@ static int printf(const char *fmt, ...)
 static char * argv_rc[] = { "/bin/sh", NULL };
 static char * envp_rc[] = { "HOME=/", NULL };
 
+//作为登陆shell执行
 static char * argv[] = { "-/bin/sh",NULL };
 static char * envp[] = { "HOME=/usr/root", NULL };
 
@@ -190,7 +191,6 @@ void init(void)
 {
 	int pid,i;
 
-	//TODO: setup() 函数...
 	setup((void *) &drive_info);
 	(void) open("/dev/tty0",O_RDWR,0);
 	(void) dup(0);
@@ -202,7 +202,6 @@ void init(void)
 		close(0);
 		if (open("/etc/rc",O_RDONLY,0))
 			_exit(1);
-		//TODO: argv_rc, envp_rc 与下边 argv, envp 差异？
 		execve("/bin/sh",argv_rc,envp_rc);
 		_exit(2);
 	}

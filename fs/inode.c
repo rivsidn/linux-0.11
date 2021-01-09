@@ -12,6 +12,7 @@
 #include <linux/mm.h>
 #include <asm/system.h>
 
+//inode 数组，通过高速缓存与硬件间接交互信息
 struct m_inode inode_table[NR_INODE]={{0,},};
 
 static void read_inode(struct m_inode * inode);

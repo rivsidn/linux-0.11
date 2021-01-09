@@ -41,6 +41,7 @@ static inline void wait_on_buffer(struct buffer_head * bh)
 	sti();
 }
 
+//刷新缓存
 int sys_sync(void)
 {
 	int i;

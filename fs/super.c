@@ -255,6 +255,7 @@ int sys_mount(char * dev_name, char * dir_name, int rw_flag)
 	return 0;			/* we do that in umount */
 }
 
+//安装根文件系统
 void mount_root(void)
 {
 	int i,free;
@@ -277,6 +278,7 @@ void mount_root(void)
 	//获取根设备的super block
 	if (!(p=read_super(ROOT_DEV)))
 		panic("Unable to mount root");
+	//根设备上的第一个节点为根节点.
 	if (!(mi=iget(ROOT_DEV,ROOT_INO)))
 		panic("Unable to read root i-node");
 	mi->i_count += 3 ;	/* NOTE! it is logically used 4 times, not 1 */
@@ -284,6 +286,7 @@ void mount_root(void)
 	current->pwd = mi;
 	current->root = mi;
 	free=0;
+	//显示统计数据
 	i=p->s_nzones;
 	while (-- i >= 0)
 		if (!set_bit(i&8191,p->s_zmap[i>>13]->b_data))
