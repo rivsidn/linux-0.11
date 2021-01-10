@@ -34,6 +34,8 @@
 
 /*
  * These are set up by the setup-routine at boot-time:
+ *
+ * 下边这些参数是setup程序在启动的时候设置的.
  */
 
 #define ORIG_X			(*(unsigned char *)0x90000)
@@ -91,9 +93,11 @@ static inline void gotoxy(unsigned int new_x,unsigned int new_y)
 		return;
 	x=new_x;
 	y=new_y;
+	//(x<<1) 也就是 x*2，一个字符占两个字节
 	pos=origin + y*video_size_row + (x<<1);
 }
 
+//TODO:next...
 static inline void set_origin(void)
 {
 	cli();
@@ -610,9 +614,14 @@ void con_write(struct tty_struct * tty)
  * This routine initalizes console interrupts, and does nothing
  * else. If you want the screen to clear, call tty_write with
  * the appropriate escape-sequece.
+ * 
+ * 该程序初始化串口中断，其他什么都不做.
+ * 如果你想要清空屏幕，调用tty_write 并给他传递适当的转义序列.
  *
  * Reads the information preserved by setup.s to determine the current display
  * type and sets everything accordingly.
+ *
+ * 读取setup.s 保存的信息并决定当前显示的类型，正确的设置各项参数.
  */
 void con_init(void)
 {
@@ -620,17 +629,18 @@ void con_init(void)
 	char *display_desc = "????";
 	char *display_ptr;
 
-	video_num_columns = ORIG_VIDEO_COLS;
+	video_num_columns = ORIG_VIDEO_COLS;		//显示器列数
 	video_size_row = video_num_columns * 2;
-	video_num_lines = ORIG_VIDEO_LINES;
+	video_num_lines = ORIG_VIDEO_LINES;		//显示器行数
 	video_page = ORIG_VIDEO_PAGE;
 	video_erase_char = 0x0720;
-	
-	if (ORIG_VIDEO_MODE == 7)			/* Is this a monochrome display? */
+
+	if (ORIG_VIDEO_MODE == 7)	/* Is this a monochrome(单色) display? */
 	{
 		video_mem_start = 0xb0000;
 		video_port_reg = 0x3b4;
 		video_port_val = 0x3b5;
+		//判断显示器类型
 		if ((ORIG_VIDEO_EGA_BX & 0xff) != 0x10)
 		{
 			video_type = VIDEO_TYPE_EGAM;
@@ -644,11 +654,12 @@ void con_init(void)
 			display_desc = "*MDA";
 		}
 	}
-	else								/* If not, it is color. */
+	else				/* If not, it is color(彩色). */
 	{
 		video_mem_start = 0xb8000;
 		video_port_reg	= 0x3d4;
 		video_port_val	= 0x3d5;
+		//判断显示器类型
 		if ((ORIG_VIDEO_EGA_BX & 0xff) != 0x10)
 		{
 			video_type = VIDEO_TYPE_EGAC;
@@ -664,23 +675,28 @@ void con_init(void)
 	}
 
 	/* Let the user known what kind of display driver we are using */
-	
+	/* 让用户知道当前用的是什么显示驱动 */
+
 	display_ptr = ((char *)video_mem_start) + video_size_row - 8;
 	while (*display_desc)
 	{
 		*display_ptr++ = *display_desc++;
+		//只设置数字没设置颜色
 		display_ptr++;
 	}
-	
+
 	/* Initialize the variables used for scrolling (mostly EGA/VGA)	*/
-	
+	/* 初始化用于滚屏的变量 */
+
 	origin	= video_mem_start;
 	scr_end	= video_mem_start + video_num_lines * video_size_row;
 	top	= 0;
 	bottom	= video_num_lines;
 
 	gotoxy(ORIG_X,ORIG_Y);
+	//设置键盘中断处理函数
 	set_trap_gate(0x21,&keyboard_interrupt);
+	//TODO: 暂且理解成，执行操作下面操作之后，键盘能用了.
 	outb_p(inb_p(0x21)&0xfd,0x21);
 	a=inb_p(0x61);
 	outb_p(a|0x80,0x61);

@@ -14,7 +14,7 @@
 #define TTY_BUF_SIZE 1024
 
 struct tty_queue {
-	unsigned long data;
+	unsigned long data;	//TODO: 暂时不清楚是做什么的
 	unsigned long head;
 	unsigned long tail;
 	struct task_struct * proc_list;

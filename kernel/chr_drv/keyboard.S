@@ -10,6 +10,12 @@
  *		Marc Corsini for the French keyboard
  */
 
+/*
+ *  键盘中断处理程序
+ *  主要功能是读取扫描码，通过映射，最终调用put_queue 将数据放到缓冲区中.
+ *  ctrl+alt+del 同时摁下时重启系统.
+ */
+
 #include <linux/config.h>
 
 .text
@@ -21,19 +27,36 @@
  */
 size	= 1024		/* must be a power of two ! And MUST be the same as in tty_io.c !!!! */
 			/* 必须是2的指数倍，必须根tty_io.c中保持一致 */
+//tty_queue{} 结构中的偏移量
 head = 4
 tail = 8
 proc_list = 12
 buf = 16
-
+/*
+ * mode 表示特殊键的按下状态.
+ *
+ * 7 - caps键按下
+ * 6 - caps键按下的状态
+ * 5 - alt右按下
+ * 4 - alt左按下
+ * 3 - ctrl右按下
+ * 2 - ctrl左按下
+ * 1 - shift右按下
+ * 0 - shift左按下
+ */
 mode:	.byte 0		/* caps, alt, ctrl and shift mode */
 leds:	.byte 2		/* num-lock, caps, scroll-lock mode (nom-lock on) */
+//当扫描码是0xe0或0xe1时，设置该标志，表示后边还跟着1个或2个字符扫描码
+//bit1 = 1 收到0xe1
+//bit0 = 1 收到0xe0
 e0:	.byte 0
 
 /*
  *  con_int is the real interrupt routine that reads the
  *  keyboard scan-code and converts it into the appropriate
  *  ascii character(s).
+ *
+ *  键盘中断入口函数
  */
 _keyboard_interrupt:
 	pushl %eax
@@ -45,15 +68,15 @@ _keyboard_interrupt:
 	movl $0x10,%eax
 	mov %ax,%ds
 	mov %ax,%es
-	xorl %al,%al		/* %eax is scan code */
-	inb $0x60,%al
+	xorl %al,%al		/* %eax is scan code */	/* 读之前清空al */
+	inb $0x60,%al		/* 获取扫描码 */
 	cmpb $0xe0,%al
 	je set_e0
 	cmpb $0xe1,%al
 	je set_e1
 	call key_table(,%eax,4)
 	movb $0,e0
-e0_e1:	inb $0x61,%al
+e0_e1:	inb $0x61,%al		//下边这部分代码用于键盘硬件复位
 	jmp 1f
 1:	jmp 1f
 1:	orb $0x80,%al
@@ -64,7 +87,7 @@ e0_e1:	inb $0x61,%al
 1:	jmp 1f
 1:	andb $0x7F,%al
 	outb %al,$0x61
-	movb $0x20,%al
+	movb $0x20,%al		//向中断芯片发送中断结束信号
 	outb %al,$0x20
 	pushl $0
 	call _do_tty_interrupt
@@ -75,27 +98,29 @@ e0_e1:	inb $0x61,%al
 	popl %ecx
 	popl %ebx
 	popl %eax
-	iret
-set_e0:	movb $1,e0
+	iret			//中断返回
+set_e0:	movb $1,e0		//设置bit0 = 1 
 	jmp e0_e1
-set_e1:	movb $2,e0
+set_e1:	movb $2,e0		//设置bit1 = 1
 	jmp e0_e1
 
 /*
  * This routine fills the buffer with max 8 bytes, taken from
  * %ebx:%eax. (%edx is high). The bytes are written in the
  * order %al,%ah,%eal,%eah,%bl,%bh ... until %eax is zero.
+ *
+ * 该程序填充buffer最多8字节，数据从ebx:eax中获取.
  */
 put_queue:
 	pushl %ecx
 	pushl %edx
-	movl _table_list,%edx		# read-queue for console
+	movl _table_list,%edx		# read-queue for console(console读队列)
 	movl head(%edx),%ecx
 1:	movb %al,buf(%edx,%ecx)
 	incl %ecx
 	andl $size-1,%ecx
 	cmpl tail(%edx),%ecx		# buffer full - discard everything
-	je 3f
+	je 3f				# 如果缓冲区已满，跳转到标号3处执行
 	shrdl $8,%ebx,%eax
 	je 2f
 	shrl $8,%ebx
@@ -104,26 +129,28 @@ put_queue:
 	movl proc_list(%edx),%ecx
 	testl %ecx,%ecx
 	je 3f
-	movl $0,(%ecx)
+	movl $0,(%ecx)			# 设置进程状态为RUNNING
 3:	popl %edx
 	popl %ecx
 	ret
 
+//摁下ctrl，alt 扫描码
 ctrl:	movb $0x04,%al
 	jmp 1f
 alt:	movb $0x10,%al
 1:	cmpb $0,e0
 	je 2f
-	addb %al,%al
-2:	orb %al,mode
+	addb %al,%al			# addb 加操作
+2:	orb %al,mode			# 设置对应的mode位
 	ret
+//松开ctrl，alt 扫描码
 unctrl:	movb $0x04,%al
 	jmp 1f
 unalt:	movb $0x10,%al
 1:	cmpb $0,e0
 	je 2f
 	addb %al,%al
-2:	notb %al
+2:	notb %al			# 取反操作
 	andb %al,mode
 	ret
 
@@ -153,6 +180,7 @@ set_leds:
 	movb leds,%al
 	outb %al,$0x60
 	ret
+//松开caps时，只需要设置对应标识位
 uncaps:	andb $0x7f,mode
 	ret
 scroll:
@@ -207,6 +235,8 @@ cur_table:
 
 /*
  * this routine handles function keys
+ *
+ * 该函数用于处理功能摁键
  */
 func:
 	pushl %eax
@@ -242,7 +272,7 @@ func_table:
 	.long 0x455b5b1b,0x465b5b1b,0x475b5b1b,0x485b5b1b
 	.long 0x495b5b1b,0x4a5b5b1b,0x4b5b5b1b,0x4c5b5b1b
 
-#if	defined(KBD_FINNISH)
+#if	defined(KBD_FINNISH)	//芬兰键盘的扫吗映射表
 key_map:
 	.byte 0,27
 	.ascii "1234567890+'"
@@ -450,6 +480,8 @@ alt_map:
 /*
  * do_self handles "normal" keys, ie keys that don't change meaning
  * and which have just one character returns.
+ *
+ * do_self 处理“正常”的按键
  */
 do_self:
 	lea alt_map,%ebx
@@ -458,9 +490,9 @@ do_self:
 	lea shift_map,%ebx
 	testb $0x03,mode
 	jne 1f
-	lea key_map,%ebx
+	lea key_map,%ebx		/* 使用普通映射表 */
 1:	movb (%ebx,%eax),%al
-	orb %al,%al
+	orb %al,%al			/* 检测是否有对应的ASCII表 */
 	je none
 	testb $0x4c,mode		/* ctrl or caps */
 	je 2f
@@ -481,7 +513,7 @@ do_self:
 	orb $0x80,%al
 4:	andl $0xff,%eax
 	xorl %ebx,%ebx
-	call put_queue
+	call put_queue			/* 将字符放到缓冲队列中 */
 none:	ret
 
 /*
@@ -499,6 +531,7 @@ minus:	cmpb $1,e0
  * This table decides which routine to call when a scan-code has been
  * gotten. Most routines just call do_self, or none, depending if
  * they are make or break.
+ * 该表决定获取到扫描码的时候调用哪个程序.
  */
 key_table:
 	.long none,do_self,do_self,do_self	/* 00-03 s0 esc 1 2 */
@@ -569,6 +602,8 @@ key_table:
 /*
  * kb_wait waits for the keyboard controller buffer to empty.
  * there is no timeout - if the buffer doesn't empty, we hang.
+ *
+ * 等待键盘控制器缓冲区清空，没有时间限制，如果没清空会一直等待.
  */
 kb_wait:
 	pushl %eax
