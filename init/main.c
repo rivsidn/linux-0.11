@@ -152,6 +152,7 @@ void main(void)		/* This really IS void, no error here. */
 	buffer_init(buffer_memory_end);
 	hd_init();
 	floppy_init();
+	//开启中断
 	sti();
 	move_to_user_mode();
 	//fork()在本文件通过_syscall0()宏定义

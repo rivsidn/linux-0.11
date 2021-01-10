@@ -6,9 +6,6 @@
  * cs
  * ip
  * 通过 iret 返回到用户态执行，之后设置数据段
- *
- * TODO: 此时处于用户态可以设置ds, fs 等，此时对于其他进程来说
- * 是不是不安全的.
  */
 #define move_to_user_mode() \
 __asm__ ("movl %%esp,%%eax\n\t" \
@@ -42,8 +39,9 @@ __asm__ ("movw %%dx,%%ax\n\t" \
 	"o" (*(4+(char *) (gate_addr))), \
 	"d" ((char *) (addr)),"a" (0x00080000))
 
+//intr,trap 差异是，当CPU通过中断门调用函数的时候会自动将IF标志清空；
+
 //设置中断门，DPL为0
-//TODO: intr 和 trap 有什么区别？
 #define set_intr_gate(n,addr) \
 	_set_gate(&idt[n],14,0,addr)
 

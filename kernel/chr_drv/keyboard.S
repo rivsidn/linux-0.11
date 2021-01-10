@@ -17,9 +17,10 @@
 
 /*
  * these are for the keyboard read functions
+ * 用于键盘读功能
  */
-size	= 1024		/* must be a power of two ! And MUST be the same
-			   as in tty_io.c !!!! */
+size	= 1024		/* must be a power of two ! And MUST be the same as in tty_io.c !!!! */
+			/* 必须是2的指数倍，必须根tty_io.c中保持一致 */
 head = 4
 tail = 8
 proc_list = 12

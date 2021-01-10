@@ -9,6 +9,10 @@
  * page_exception is handled by the mm, so that isn't here. This
  * file also handles (hopefully) fpu-exceptions due to TS-bit, as
  * the fpu must be properly saved/resored. This hasn't been tested.
+ *
+ * 该文件包含大多数硬件异常的底层代码，页异常不在此处.
+ * cpu处理的时候，有的异常会压入error_code，有的不会，此处分开处理.
+ * page_exception 会压入 error_code .
  */
 
 .globl _divide_error,_debug,_nmi,_int3,_overflow,_bounds,_invalid_op
@@ -30,7 +34,7 @@ no_error_code:
 	push %es
 	push %fs
 	pushl $0		# "error code"
-	lea 44(%esp),%edx
+	lea 44(%esp),%edx	# 将栈中EIP的数值入栈
 	pushl %edx
 	movl $0x10,%edx
 	mov %dx,%ds
@@ -82,10 +86,12 @@ _reserved:
 	pushl $_do_reserved
 	jmp no_error_code
 
+# 协处理器执行完一个操作时就会发出IRQ13信号，通知CPU操作完成.
+# IRQ13对应linux的int45.
 _irq13:
 	pushl %eax
 	xorb %al,%al
-	outb %al,$0xF0
+	outb %al,$0xF0		# TODO: 操作外设，干了什么暂时不清楚
 	movb $0x20,%al
 	outb %al,$0x20
 	jmp 1f

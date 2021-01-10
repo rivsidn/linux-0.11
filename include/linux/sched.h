@@ -159,7 +159,7 @@ extern void wake_up(struct task_struct ** p);
  * 0 空描述符
  * 1 代码段
  * 2 数据段
- * 3 syscall(TODO:什么地方用到？)
+ * 3 syscall
  * 4 TSS0
  * 5 LDT0
  * 6 TSS1...
@@ -170,6 +170,7 @@ extern void wake_up(struct task_struct ** p);
 #define _LDT(n) ((((unsigned long) n)<<4)+(FIRST_LDT_ENTRY<<3))
 #define ltr(n) __asm__("ltr %%ax"::"a" (_TSS(n)))
 #define lldt(n) __asm__("lldt %%ax"::"a" (_LDT(n)))
+//该宏返回的是此时进程的TSS是从头开始第几个
 #define str(n) \
 __asm__("str %%ax\n\t" \
 	"subl %2,%%eax\n\t" \
