@@ -97,7 +97,7 @@ static inline void gotoxy(unsigned int new_x,unsigned int new_y)
 	pos=origin + y*video_size_row + (x<<1);
 }
 
-//TODO:next...
+//设置显示内存起始地址
 static inline void set_origin(void)
 {
 	cli();
@@ -108,15 +108,19 @@ static inline void set_origin(void)
 	sti();
 }
 
+//向上卷动就是内容上移或者是窗口下移
 static void scrup(void)
 {
 	if (video_type == VIDEO_TYPE_EGAC || video_type == VIDEO_TYPE_EGAM)
 	{
+		//全屏移动
 		if (!top && bottom == video_num_lines) {
 			origin += video_size_row;
 			pos += video_size_row;
 			scr_end += video_size_row;
 			if (scr_end > video_mem_end) {
+				//将数据从origin移到video_mem_start处, 并清空最后一行
+				//重新设置origin
 				__asm__("cld\n\t"
 					"rep\n\t"
 					"movsl\n\t"
@@ -132,6 +136,7 @@ static void scrup(void)
 				pos -= origin-video_mem_start;
 				origin = video_mem_start;
 			} else {
+				//清空最后一行
 				__asm__("cld\n\t"
 					"rep\n\t"
 					"stosw"
@@ -142,6 +147,7 @@ static void scrup(void)
 			}
 			set_origin();
 		} else {
+			//直接移动内容
 			__asm__("cld\n\t"
 				"rep\n\t"
 				"movsl\n\t"
@@ -157,6 +163,7 @@ static void scrup(void)
 	}
 	else		/* Not EGA/VGA */
 	{
+		//直接移动内容
 		__asm__("cld\n\t"
 			"rep\n\t"
 			"movsl\n\t"
@@ -171,6 +178,7 @@ static void scrup(void)
 	}
 }
 
+//向下卷动就是内容下移或者是窗口上移
 static void scrdown(void)
 {
 	if (video_type == VIDEO_TYPE_EGAC || video_type == VIDEO_TYPE_EGAM)
@@ -205,6 +213,7 @@ static void scrdown(void)
 	}
 }
 
+//光标向下移动一行
 static void lf(void)
 {
 	if (y+1<bottom) {
@@ -215,6 +224,7 @@ static void lf(void)
 	scrup();
 }
 
+//光标向上移动一行
 static void ri(void)
 {
 	if (y>top) {
@@ -225,12 +235,14 @@ static void ri(void)
 	scrdown();
 }
 
+//光标回到第一列
 static void cr(void)
 {
 	pos -= x<<1;
 	x=0;
 }
 
+//擦除光标前一个字符
 static void del(void)
 {
 	if (x) {
@@ -240,6 +252,7 @@ static void del(void)
 	}
 }
 
+//删除屏幕上与光标位置相关的部分
 static void csi_J(int par)
 {
 	long count __asm__("cx");
@@ -269,6 +282,7 @@ static void csi_J(int par)
 		:"cx","di");
 }
 
+//删除行内与光标位置相关的部分
 static void csi_K(int par)
 {
 	long count __asm__("cx");
@@ -306,14 +320,15 @@ void csi_m(void)
 
 	for (i=0;i<=npar;i++)
 		switch (par[i]) {
-			case 0:attr=0x07;break;
-			case 1:attr=0x0f;break;
-			case 4:attr=0x0f;break;
-			case 7:attr=0x70;break;
-			case 27:attr=0x07;break;
+			case 0:attr=0x07;break;		//正常显示
+			case 1:attr=0x0f;break;		//加粗
+			case 4:attr=0x0f;break;		//加下划线
+			case 7:attr=0x70;break;		//反显
+			case 27:attr=0x07;break;	//正常显示
 		}
 }
 
+//设置光标位置
 static inline void set_cursor(void)
 {
 	cli();
@@ -330,6 +345,7 @@ static void respond(struct tty_struct * tty)
 
 	cli();
 	while (*p) {
+		//将RESPONSE 放到读缓冲中
 		PUTCH(*p,tty->read_q);
 		p++;
 	}
@@ -337,6 +353,7 @@ static void respond(struct tty_struct * tty)
 	copy_to_cooked(tty);
 }
 
+//光标处插入一个空格字符
 static void insert_char(void)
 {
 	int i=x;
@@ -392,6 +409,7 @@ static void delete_line(void)
 	bottom=oldbottom;
 }
 
+//光标处插入nr 个字符
 static void csi_at(unsigned int nr)
 {
 	if (nr > video_num_columns)
@@ -402,6 +420,7 @@ static void csi_at(unsigned int nr)
 		insert_char();
 }
 
+//光标位置插入nr 行
 static void csi_L(unsigned int nr)
 {
 	if (nr > video_num_lines)
@@ -412,6 +431,7 @@ static void csi_L(unsigned int nr)
 		insert_line();
 }
 
+//删除光标处nr 个字符
 static void csi_P(unsigned int nr)
 {
 	if (nr > video_num_columns)
@@ -422,6 +442,7 @@ static void csi_P(unsigned int nr)
 		delete_char();
 }
 
+//删除光标处nr 行
 static void csi_M(unsigned int nr)
 {
 	if (nr > video_num_lines)
@@ -435,12 +456,14 @@ static void csi_M(unsigned int nr)
 static int saved_x=0;
 static int saved_y=0;
 
+//保存光标位置
 static void save_cur(void)
 {
 	saved_x=x;
 	saved_y=y;
 }
 
+//恢复光标位置
 static void restore_cur(void)
 {
 	gotoxy(saved_x, saved_y);
@@ -704,6 +727,7 @@ void con_init(void)
 }
 /* from bsd-net-2: */
 
+//停止蜂鸣
 void sysbeepstop(void)
 {
 	/* disable counter 2 */
@@ -712,6 +736,7 @@ void sysbeepstop(void)
 
 int beepcount = 0;
 
+//开通蜂鸣器
 static void sysbeep(void)
 {
 	/* enable counter 2 */
