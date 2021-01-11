@@ -469,6 +469,7 @@ static void restore_cur(void)
 	gotoxy(saved_x, saved_y);
 }
 
+//TODO: 具体的实现没仔细看...
 void con_write(struct tty_struct * tty)
 {
 	int nr;
@@ -476,6 +477,7 @@ void con_write(struct tty_struct * tty)
 
 	nr = CHARS(tty->write_q);
 	while (nr--) {
+		//从写缓冲区中获取数据，显示到屏幕上
 		GETCH(tty->write_q,c);
 		switch(state) {
 			case 0:

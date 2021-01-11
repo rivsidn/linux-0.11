@@ -36,10 +36,13 @@ static void init(int port)
 
 void rs_init(void)
 {
+	//设置中断
 	set_intr_gate(0x24,rs1_interrupt);
 	set_intr_gate(0x23,rs2_interrupt);
+	//TODO: next...
 	init(tty_table[1].read_q.data);
 	init(tty_table[2].read_q.data);
+	//开启中断
 	outb(inb_p(0x21)&0xE7,0x21);
 }
 
