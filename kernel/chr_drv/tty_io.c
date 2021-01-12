@@ -338,6 +338,8 @@ int tty_write(unsigned channel, char * buf, int nr)
  * I don't think we sleep here under normal circumstances
  * anyway, which is good, as the task sleeping might be
  * totally innocent.
+ *
+ * 中断处理函数中调用
  */
 void do_tty_interrupt(int tty)
 {

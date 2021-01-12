@@ -23,8 +23,10 @@
 extern void rs1_interrupt(void);
 extern void rs2_interrupt(void);
 
+//串口设备初始化
 static void init(int port)
 {
+	//设置波特率
 	outb_p(0x80,port+3);	/* set DLAB of line control reg */
 	outb_p(0x30,port);	/* LS of divisor (48 -> 2400 bps */
 	outb_p(0x00,port+1);	/* MS of divisor */
@@ -39,7 +41,6 @@ void rs_init(void)
 	//设置中断
 	set_intr_gate(0x24,rs1_interrupt);
 	set_intr_gate(0x23,rs2_interrupt);
-	//TODO: next...
 	init(tty_table[1].read_q.data);
 	init(tty_table[2].read_q.data);
 	//开启中断
@@ -56,6 +57,7 @@ void rs_init(void)
 void rs_write(struct tty_struct * tty)
 {
 	cli();
+	//如果不为空则允许发送中断
 	if (!EMPTY(tty->write_q))
 		outb(inb_p(tty->write_q.data+1)|0x02,tty->write_q.data+1);
 	sti();
