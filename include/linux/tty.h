@@ -44,16 +44,20 @@ struct tty_queue {
 
 struct tty_struct {
 	struct termios termios;
-	int pgrp;
-	int stopped;
+	int pgrp;		//所属进程组
+	int stopped;		//停止标志
 	void (*write)(struct tty_struct * tty);
 	struct tty_queue read_q;
 	struct tty_queue write_q;
 	struct tty_queue secondary;
-	};
+};
 
 extern struct tty_struct tty_table[];
 
+
+/*
+ * 控制字符对应的asic码
+ */
 /*	intr=^C		quit=^|		erase=del	kill=^U
 	eof=^D		vtime=\0	vmin=\1		sxtc=\0
 	start=^Q	stop=^S		susp=^Z		eol=\0

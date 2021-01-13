@@ -52,6 +52,7 @@ struct termio {
 
 #define NCCS 17
 struct termios {
+	//标识位
 	unsigned long c_iflag;		/* input mode flags */
 	unsigned long c_oflag;		/* output mode flags */
 	unsigned long c_cflag;		/* control mode flags */

@@ -128,7 +128,7 @@ write_char:
 	movl head(%ecx),%ebx
 	subl tail(%ecx),%ebx
 	andl $size-1,%ebx		# nr chars in queue
-	je write_buffer_empty
+	je write_buffer_empty		# 如果写队列中没有数据，跳转
 	cmpl $startup,%ebx
 	ja 1f
 	movl proc_list(%ecx),%ebx	# wake up sleeping process
@@ -136,21 +136,21 @@ write_char:
 	je 1f
 	movl $0,(%ebx)
 1:	movl tail(%ecx),%ebx
-	movb buf(%ecx,%ebx),%al
+	movb buf(%ecx,%ebx),%al		# 输出数据到串口上
 	outb %al,%dx
 	incl %ebx
 	andl $size-1,%ebx
 	movl %ebx,tail(%ecx)
 	cmpl head(%ecx),%ebx
-	je write_buffer_empty
+	je write_buffer_empty		# 如果已经没有数据了
 	ret
 .align 2
 write_buffer_empty:
 	movl proc_list(%ecx),%ebx	# wake up sleeping process
 	testl %ebx,%ebx			# is there any?
 	je 1f
-	movl $0,(%ebx)
-1:	incl %edx
+	movl $0,(%ebx)			# 唤醒进程
+1:	incl %edx			# 关闭发送中断操作
 	inb %dx,%al
 	jmp 1f
 1:	jmp 1f

@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <signal.h>
 
+//信号在位图中的对应bit位
 #define ALRMMASK (1<<(SIGALRM-1))
 #define KILLMASK (1<<(SIGKILL-1))
 #define INTMASK (1<<(SIGINT-1))
@@ -25,6 +26,7 @@
 #include <asm/segment.h>
 #include <asm/system.h>
 
+//判断f是否在对应flag中设置
 #define _L_FLAG(tty,f)	((tty)->termios.c_lflag & f)
 #define _I_FLAG(tty,f)	((tty)->termios.c_iflag & f)
 #define _O_FLAG(tty,f)	((tty)->termios.c_oflag & f)
@@ -100,14 +102,17 @@ struct tty_queue * table_list[]={
 	&tty_table[0].read_q, &tty_table[0].write_q,
 	&tty_table[1].read_q, &tty_table[1].write_q,
 	&tty_table[2].read_q, &tty_table[2].write_q
-	};
+};
 
 void tty_init(void)
 {
+	//串口初始化
 	rs_init();
+	//显示器参数设置, 键盘初始化
 	con_init();
 }
 
+//向tty所属进程组的所有进程发送信号
 void tty_intr(struct tty_struct * tty, int mask)
 {
 	int i;
@@ -119,6 +124,7 @@ void tty_intr(struct tty_struct * tty, int mask)
 			task[i]->signal |= mask;
 }
 
+//如果队列为空则休眠
 static void sleep_if_empty(struct tty_queue * queue)
 {
 	cli();
@@ -127,6 +133,7 @@ static void sleep_if_empty(struct tty_queue * queue)
 	sti();
 }
 
+//如果队列已满则休眠
 static void sleep_if_full(struct tty_queue * queue)
 {
 	if (!FULL(*queue))
@@ -142,6 +149,9 @@ void wait_for_keypress(void)
 	sleep_if_empty(&tty_table[0].secondary);
 }
 
+//TODO: 函数实现没仔细看
+//	从对队列中取出数据, 处理, 放到辅助队列中,
+//	如果设置了echo, 需要同时放到写队列中
 void copy_to_cooked(struct tty_struct * tty)
 {
 	signed char c;
@@ -227,6 +237,8 @@ void copy_to_cooked(struct tty_struct * tty)
 	wake_up(&tty->secondary.proc_list);
 }
 
+//TODO: 函数实现没仔细看
+//	上层接口
 int tty_read(unsigned channel, char * buf, int nr)
 {
 	struct tty_struct * tty;
@@ -287,6 +299,8 @@ int tty_read(unsigned channel, char * buf, int nr)
 	return (b-buf);
 }
 
+//TODO: 函数实现没仔细看
+//	上层接口
 int tty_write(unsigned channel, char * buf, int nr)
 {
 	static cr_flag=0;

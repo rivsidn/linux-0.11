@@ -21,6 +21,7 @@ static unsigned short quotient[] = {
 	64, 48, 24, 12, 6, 3
 };
 
+//改变串口速率
 static void change_speed(struct tty_struct * tty)
 {
 	unsigned short port,quot;
@@ -93,6 +94,8 @@ static int get_termio(struct tty_struct * tty, struct termio * termio)
 
 /*
  * This only works as the 386 is low-byt-first
+ *
+ * 该程序能够正常工作是因为x86是低字节序
  */
 static int set_termio(struct tty_struct * tty, struct termio * termio)
 {
