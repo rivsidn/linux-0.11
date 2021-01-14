@@ -166,7 +166,7 @@ _device_not_available:
 	pushl %ebp
 	pushl %esi
 	pushl %edi
-	call _math_emulate
+	call _math_emulate		# 调用数学模拟程序
 	popl %edi
 	popl %esi
 	popl %ebp

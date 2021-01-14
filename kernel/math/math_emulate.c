@@ -7,6 +7,9 @@
 /*
  * This directory should contain the math-emulation code.
  * Currently only results in a signal.
+ *
+ * 该文件应该包含数学模拟代码.
+ * 当前没实现.
  */
 
 #include <signal.h>
@@ -15,6 +18,7 @@
 #include <linux/kernel.h>
 #include <asm/segment.h>
 
+/* 没实现,给进程发送一个信号 */
 void math_emulate(long edi, long esi, long ebp, long sys_call_ret,
 	long eax,long ebx,long ecx,long edx,
 	unsigned short fs,unsigned short es,unsigned short ds,
@@ -23,7 +27,7 @@ void math_emulate(long edi, long esi, long ebp, long sys_call_ret,
 {
 	unsigned char first, second;
 
-/* 0x0007 means user code space */
+	/* 0x0007 means user code space */
 	if (cs != 0x000F) {
 		printk("math_emulate: %04x:%08x\n\r",cs,eip);
 		panic("Math emulation needed in kernel");
