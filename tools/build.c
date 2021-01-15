@@ -14,6 +14,8 @@
  * It does some checking that all files are of the correct type, and
  * just writes the result to stdout, removing headers and padding to
  * the right amount. It also writes some system data to stderr.
+ *
+ * 将bootsect, setup, system 组成一个内核映像文件.
  */
 
 /*
@@ -29,19 +31,24 @@
 #include <unistd.h>	/* contains read/write */
 #include <fcntl.h>
 
-#define MINIX_HEADER 32
-#define GCC_HEADER 1024
 
-#define SYS_SIZE 0x2000
+#define MINIX_HEADER 32		//minix 二进制头部模块32字节
+#define GCC_HEADER 1024		//GCC 头部信息长度为1024字节
 
-#define DEFAULT_MAJOR_ROOT 3
-#define DEFAULT_MINOR_ROOT 6
+#define SYS_SIZE 0x2000		//system 文件最长字节数
 
-/* max nr of sectors of setup: don't change unless you also change
- * bootsect etc */
+#define DEFAULT_MAJOR_ROOT 3	//默认主设备号
+#define DEFAULT_MINOR_ROOT 6	//默认次设备号
+
+/* 
+ * max nr of sectors of setup: don't change unless you also change
+ * bootsect etc
+ *
+ * setup 的最大扇区数量, 不要修改, 除非同时修改 bootsec 等
+ */
 #define SETUP_SECTS 4
 
-#define STRINGIFY(x) #x
+#define STRINGIFY(x) #x		//将宏变成字符串
 
 void die(char * str)
 {
@@ -63,7 +70,7 @@ int main(int argc, char ** argv)
 
 	if ((argc != 4) && (argc != 5))
 		usage();
-	if (argc == 5) {
+	if (argc == 5) {	//指定了rootdev
 		if (strcmp(argv[4], "FLOPPY")) {
 			if (stat(argv[4], &sb)) {
 				perror(argv[4]);
@@ -86,7 +93,11 @@ int main(int argc, char ** argv)
 			major_root);
 		die("Bad root device --- major #");
 	}
+	//清空buf
 	for (i=0;i<sizeof buf; i++) buf[i]=0;
+	//bootsect 操作
+	//先读取一个MINIX_HEADER, 判断文件内容是否正确, 
+	//将其他部分写入到image中
 	if ((id=open(argv[1],O_RDONLY,0))<0)
 		die("Unable to open 'boot'");
 	if (read(id,buf,MINIX_HEADER) != MINIX_HEADER)
@@ -115,7 +126,8 @@ int main(int argc, char ** argv)
 	if (i!=512)
 		die("Write call failed");
 	close (id);
-	
+	//setup 操作
+	//同上...
 	if ((id=open(argv[2],O_RDONLY,0))<0)
 		die("Unable to open 'setup'");
 	if (read(id,buf,MINIX_HEADER) != MINIX_HEADER)
@@ -150,7 +162,8 @@ int main(int argc, char ** argv)
 			die("Write call failed");
 		i += c;
 	}
-	
+	//system 操作
+	//先读取一个GCC_HEADER, 将剩余部分写入到image中
 	if ((id=open(argv[3],O_RDONLY,0))<0)
 		die("Unable to open 'system'");
 	if (read(id,buf,GCC_HEADER) != GCC_HEADER)
