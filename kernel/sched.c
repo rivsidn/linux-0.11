@@ -100,6 +100,11 @@ void math_state_restore()
  *   NOTE!!  Task 0 is the 'idle' task, which gets called when no other
  * tasks can run. It can not be killed, and it cannot sleep. The 'state'
  * information in task[0] is never used.
+ *
+ * 进程调度，总共有3 类地方调用：
+ * 1. 主动放弃
+ * 2. 系统调用返回
+ * 3. 时钟中断处理
  */
 void schedule(void)
 {

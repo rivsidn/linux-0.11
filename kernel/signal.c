@@ -79,6 +79,9 @@ int sys_sigaction(int signum, const struct sigaction * action,
 	return 0;
 }
 
+/*
+ * ret_from_sys_call 中调用
+ */
 void do_signal(long signr,long eax, long ebx, long ecx, long edx,
 	long fs, long es, long ds,
 	long eip, long cs, long eflags,
@@ -101,6 +104,10 @@ void do_signal(long signr,long eax, long ebx, long ecx, long edx,
 	}
 	if (sa->sa_flags & SA_ONESHOT)
 		sa->sa_handler = NULL;
+	//put_fs_long() 设置的是用户态堆栈，由信号处理函数使用.
+	//通过修改eip，从内核态返回之后会直接跳转到用户态处理函数执行，
+	//用户态函数执行结束之后，会通过执行用户态的sa_restorer函数，返
+	//回到执行停止的地方执行.
 	*(&eip) = sa_handler;
 	longs = (sa->sa_flags & SA_NOMASK)?7:8;
 	*(&esp) -= longs;
