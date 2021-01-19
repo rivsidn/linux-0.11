@@ -1,82 +1,158 @@
-## 文件作用
+## 材料准备
 
-| 文件名            | 作用                                                     |
-| ----------------- | -------------------------------------------------------- |
-| bootimage-0.11    | 系统镜像文件(boot，setup，system)，启动有问题            |
-| bootimage-0.11-fd | 系统镜像文件(设置fd为root_dev) ，启动有问题              |
-| bootimage-0.11-hd | 系统镜像文件(设置hd为root_dev)                           |
-| diska.img         | 通过msdos文件系统存储的资料(可以通过mount -t msdos查看)  |
-| diskb.img         | 通过msdos文件系统存储的资料                              |
-| hdc-0.11-new.img  | 磁盘文件，两个分区，根文件系统，(这里边应该也有一个boot) |
-| rootimage-0.11    | 根文件系统，minix文件系统，启动有问题                    |
-
-
-
-## BOCHS调试
-
-通过bochs调试系统，最少需要以下一些资源：
-
-* BIOS镜像文件(自带)
-* VGA BIOS镜像文件(自带)
-* 引导启动磁盘镜像文件
-* 根文件系统
-
-
-
-启动linux系统需要设置：
-
-* boot设备为floopya，镜像为 bootimage-0.11-hd，此时为从磁盘启动
-* 设置ata0，镜像为 hdc-0.11-new.img
+文件下载[下载链接](http://www.oldlinux.org/Linux.old/bochs/linux-0.11-devel-060625.zip)，下载之后解压：
 
 ```bash
-bochs -f bochs.bxrc							# 已经设置好的启动文件
+# 解压zip文件
+unzip linux-0.11-devel-060625.zip
 ```
 
 
 
-## 命令解析
+文件主要包括几部分：
+
+* README
+
+* SYSTEM.MAP文件
+
+* bochs安装包
+
+* bochs配置文件
+
+* 镜像文件
+
+  | 文件名            | 描述                                               |
+  | ----------------- | -------------------------------------------------- |
+  | bootimage-0.11    | 0.11 内核编译生成的镜像文件，ROOT_DEV 设置为0x0000 |
+  | bootimage-0.11-fd | 0.11 内核编译生成的镜像文件，ROOT_DEV 设置为0x021d |
+  | bootimage-0.11-hd | 0.11 内核编译生成的镜像文件，ROOT_DEV 设置为0x0301 |
+  | bootimage-0.12-fd | 同上，忽略                                         |
+  | bootimage-0.12-hd | 同上，忽略                                         |
+  | diska.img         | dos格式的磁盘镜像文件                              |
+  | diskb.img         | 同上                                               |
+  | hdc-0.11-new.img  | 含有两个分区的硬盘根文件系统(minix文件系统)        |
+  | rootimage-0.11    | 软盘根文件系统(minix文件系统)                      |
+
+  
+
+## Bochs 虚拟机运行
+
+用新版本的bochs虚拟机运行系统，需要：
+
+* 镜像文件(bootimage-0.11-hd)
+* 硬盘根文件系统(hdc-0.11-new.img)
+
+镜像文件包含内核代码中的`bootsect`，`setup`，`system` 部分，最终由tools/build 合并成镜像文件，具体可以参考源码。
+
+设备上电之后会将镜像加载到内存中，根据ROOT_DEV设备加载根文件系统。
+
+
+
+Bochs虚拟机需要设置**floppya** 和 **ata0-master**，具体设置如下所示：
 
 ```bash
-# loop 设备
-mount -t minix rootimage-0.11 /mnt -o loop
-# 上边这条命令等同与下边两条命令
-losetup /dev/loop[x] rootimage-0.11
-mount -t minix /dev/loop[x]
+# floppy设置
+floppya: type=1_44, 1_44="/home/rivsidn/gitHub/linux-0.11/Discovery/linux-0.11-devel-060625/bootimage-0.11-hd", status=inserted, write_protected=1
+# 磁盘设置
+ata0-master: type=disk, path="/home/rivsidn/gitHub/linux-0.11/Discovery/linux-0.11-devel-060625/hdc-0.11-new.img", mode=flat, cylinders=410, heads=16, spt=38, model="Generic 1234", biosdetect=auto, translation=auto
 ```
+
+其中，`bootimage-0.11-hd`， `hdc-0.11-new.img` 为具体的存放路径，需要根据实际情况改变。
+
+设置之后保存，后续可以通过`-f` 选项选中对应配置文件直接启动。
+
+
+
+## 内核编译
+
+启动之后本应该直接可以开始调试，但调试过程中发现提供的SYSTEM.MAP 文件跟镜像不匹配，所以需要自己重新编译内核，生成镜像和system.map文件。
+
+* 将代码放到第二个分区中
+
+  ```bash
+  sudo losetup -o 63504384 /dev/loop2 hdc-0.11-new.img
+  sudo mount -t minix /dev/loop2 /mnt
+  sudo cp linux-0.11.tar.gz /mnt
+  sudo tar xzvf linux-0.11.tar.gz
+  ```
+
+* 修改makefile文件， 去掉makefile文件中的`-mstring-insns`选项
+
+* 编译
+
+  ```bash
+  make 		# 直接make即可将
+  ```
+
+* 取出编译生成文件
+
+  * Image
+  * System.map
+  * boot/bootsect，boot/bootsect.o
+  * boot/setup，boot/setup.o
+  * tools/system
+
+
+
+## 镜像替换
+
+直接编译生成的`Image` 文件设置的ROOT_DEV为0x0306，跟当前环境不符合，需要手动改成0x0301，修改之后设置bochs配置文件，将第一个软盘指向新生成的镜像文件即可。
 
 
 
 ## 附录
 
-### loop设备说明
+### 查看磁盘镜像内容
 
-> loop设备是一种伪设备，是使用文件来模拟块设备的一种技术，文件模拟成块设备后, 就像一个磁盘或光盘一样使用。
->
-> 一般在linux中会有8个loop设备，一般是/dev/loop0~loop7，可用通过losetup -a查看所有的loop设备，如果命令没有输出就说明所有的loop设备都没有被占用，你可以按照以下步骤创建自己的loop设备。
->
-> 1）创建一个文件
-> dd if=/dev/zero of=/var/loop.img bs=1M count=10240
->
-> 2）使用losetup将文件转化为块设备
-> losetup /dev/loop0 /var/loop.img
->
-> 3）通过lsblk查看刚刚创建的块设备
-> lsblk |grep loop0
-> losetup -a
->
-> 3）通过lsblk查看刚刚创建的块设备
-> lsblk |grep loop0
-> losetup -a
->
-> 4)   /dev/loop[x]设备关联文件之后，可以当成磁盘设备来用
->
-> 5）要删除这个loop设备可以执行以下命令
-> losetup -d /dev/loop0
+* 查看不含分区的磁盘镜像内容
 
+  ```bash
+  # 查看diska[b].img 文件内容
+  sudo losetup /dev/loop0 diska.img
+  sudo mount -t msdos /dev/loop0 /mnt/
+  # 退出
+  sudo umount /dev/loop0
+  sudo losetup -d /dev/loop0
+  
+  # 查看rootimage-0.11 文件内容
+  sudo losetup /dev/loop0 rootimage-0.11
+  sudo mount -t minix /dev/loop0 /mnt/
+  # 退出
+  sudo umount /dev/loop0
+  sudo losetup -d /dev/loop0
+  ```
 
+* 查看含分区的磁盘镜像内容
+
+  ```bash
+  sudo losetup /dev/loop0 hdc-0.11-new.img
+  sudo fdisk -l /dev/loop0
+  
+  Disk /dev/loop0: 121.7 MiB, 127631360 bytes, 249280 sectors
+  Units: sectors of 1 * 512 = 512 bytes
+  Sector size (logical/physical): 512 bytes / 512 bytes
+  I/O size (minimum/optimal): 512 bytes / 512 bytes
+  Disklabel type: dos
+  Disk identifier: 0x00000000
+  
+  Device       Boot  Start    End Sectors  Size Id Type
+  /dev/loop0p1           2 124031  124030 60.6M 81 Minix / old Linux
+  /dev/loop0p2      124032 248063  124032 60.6M 81 Minix / old Linux
+  
+  # 查看第一个分区内容
+  # 此处losetup时需要加偏移量，偏移量为Start*512，单位是字节
+  sudo losetup -o 1024 /dev/loop1 hdc-0.11-new.img
+  sudo mount -t minix /dev/loop1 /mnt/
+  
+  # 退出
+  sudo umount /dev/loop1
+  sudo losetup -d /dev/loop1
+  sudo losetup -d /dev/loop0
+  ```
+
+  
 
 ## 参考资料
 
 * 《linux内核完全注释》
-* [linux-0.11-devel-060625.zip 下载链接](http://www.oldlinux.org/Linux.old/bochs/linux-0.11-devel-060625.zip)
 
