@@ -1,0 +1,738 @@
+kernel/blk_drv/blk_drv.a(ll_rw_blk.o) needed due to _ll_rw_block
+kernel/blk_drv/blk_drv.a(floppy.o) needed due to _do_floppy
+kernel/blk_drv/blk_drv.a(hd.o) needed due to _do_hd
+kernel/blk_drv/blk_drv.a(ramdisk.o) needed due to _rd_load
+kernel/chr_drv/chr_drv.a(tty_io.o) needed due to _tty_table
+kernel/chr_drv/chr_drv.a(console.o) needed due to _con_write
+kernel/chr_drv/chr_drv.a(keyboard.o) needed due to _keyboard_interrupt
+kernel/chr_drv/chr_drv.a(serial.o) needed due to _rs_init
+kernel/chr_drv/chr_drv.a(rs_io.o) needed due to _rs1_interrupt
+kernel/chr_drv/chr_drv.a(tty_ioctl.o) needed due to _tty_ioctl
+kernel/math/math.a(math_emulate.o) needed due to _math_emulate
+lib/lib.a(ctype.o) needed due to __ctype
+lib/lib.a(_exit.o) needed due to __exit
+lib/lib.a(open.o) needed due to _open
+lib/lib.a(close.o) needed due to _close
+lib/lib.a(write.o) needed due to _write
+lib/lib.a(dup.o) needed due to _dup
+lib/lib.a(setsid.o) needed due to _setsid
+lib/lib.a(execve.o) needed due to _execve
+lib/lib.a(wait.o) needed due to _wait
+lib/lib.a(string.o) needed due to _memcpy
+Allocating common _drive_info: 20 at 1dd24
+Allocating common _hash_table: 4cc at 1dd44
+Allocating common __ctmp: 4 at 1e210
+Allocating common _user_stack: 1000 at 1e214
+Allocating common _file_table: 400 at 1f214
+Allocating common _rd_start: 4 at 1f614
+Allocating common ____strtok: 4 at 1f618
+Allocating common _request: 480 at 1f61c
+Allocating common _errno: 4 at 1fa9c
+Allocating common _super_block: 360 at 1faa0
+
+Files:
+
+  boot/head.o text 0(64b8), data 18000(0), bss 1d198(0) hex
+  init/main.o text 64b8(57c), data 18000(2c), bss 1d198(400) hex
+  kernel/kernel.o text 6a34(3fc4), data 1802c(12d8), bss 1d598(700) hex
+  mm/mm.o text a9f8(e8c), data 19304(f08), bss 1dc98(0) hex
+  fs/fs.o text b884(5408), data 1a20c(758), bss 1dc98(8) hex
+  kernel/blk_drv/blk_drv.a(ll_rw_blk.o) text 10c8c(2cc), data 1a964(3c), bss 1dca0(0) hex
+  kernel/blk_drv/blk_drv.a(floppy.o) text 10f58(1bd4), data 1a9a0(e8), bss 1dca0(7) hex
+  kernel/blk_drv/blk_drv.a(hd.o) text 12b2c(1244), data 1aa88(94), bss 1dca7(0) hex
+  kernel/blk_drv/blk_drv.a(ramdisk.o) text 13d70(4f8), data 1ab1c(4), bss 1dca7(0) hex
+  kernel/chr_drv/chr_drv.a(tty_io.o) text 14268(924), data 1ab20(253c), bss 1dca7(0) hex
+  kernel/chr_drv/chr_drv.a(console.o) text 14b8c(141c), data 1d05c(18), bss 1dca7(7c) hex
+  kernel/chr_drv/chr_drv.a(keyboard.o) text 15fa8(7e4), data 1d074(0), bss 1dd23(0) hex
+  kernel/chr_drv/chr_drv.a(serial.o) text 1678c(148), data 1d074(0), bss 1dd23(0) hex
+  kernel/chr_drv/chr_drv.a(rs_io.o) text 168d4(f8), data 1d074(0), bss 1dd23(0) hex
+  kernel/chr_drv/chr_drv.a(tty_ioctl.o) text 169cc(374), data 1d074(20), bss 1dd23(0) hex
+  kernel/math/math.a(math_emulate.o) text 16d40(d4), data 1d094(0), bss 1dd23(0) hex
+  lib/lib.a(ctype.o) text 16e14(0), data 1d094(104), bss 1dd23(0) hex
+  lib/lib.a(_exit.o) text 16e14(10), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(open.o) text 16e24(28), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(close.o) text 16e4c(20), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(write.o) text 16e6c(28), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(dup.o) text 16e94(20), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(setsid.o) text 16eb4(18), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(execve.o) text 16ecc(28), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(wait.o) text 16ef4(54), data 1d198(0), bss 1dd23(0) hex
+  lib/lib.a(string.o) text 16f48(340), data 1d198(0), bss 1dd23(0) hex
+
+Global symbols:
+
+  _dup: 0x16e94
+  _nmi: 0x8e28
+  _bmap: 0xc39c
+  _iput: 0xc3ec
+  _blk_dev_init: 0x10f2c
+  _open: 0x16e24
+  _do_execve: 0xe428
+  _con_init: 0x15d34
+  _put_super: 0xd420
+  _sys_setgid: 0x9b88
+  _sys_umask: 0x9f90
+  _con_write: 0x14fcc
+  _show_task: 0x6a74
+  _buffer_init: 0xd278
+  _tmp_floppy_area: 0x5000
+  _get_free_page: 0xaa08
+  _schedule: 0x6b8c
+  _copy_mem: 0x8f48
+  _sys_times: 0x9df0
+  _release: 0x9fd4
+  _sys_uname: 0x9f58
+  _table_list: 0x1d040
+  _sysbeepstop: 0x15f44
+  _bounds: 0x8e3d
+  _sys_execve: 0x752c
+  _keyboard_interrupt: 0x15fab
+  _sys_rmdir: 0xfcb4
+  _vsprintf: 0x970c
+  _put_page: 0xae50
+  _getblk: 0xcdc0
+  _floppy_init: 0x12a98
+  _floppy_change: 0x11000
+  _sys_setup: 0x12be8
+  _strtok: 0x1714c
+  _check_disk_change: 0xcc24
+  _stack_start: 0x1925c
+  _free_page: 0xaa74
+  _sys_pause: 0x6c94
+  _create_block: 0xc3b4
+  _page_fault: 0xb84c
+  _drive_info: 0x1dd24
+  _do_tty_interrupt: 0x14b70
+  _strstr: 0x17100
+  _truncate: 0x10bf0
+  _hash_table: 0x1dd44
+  _do_wp_page: 0xafd4
+  _strspn: 0x17064
+  _hd_interrupt: 0x7554
+  _unexpected_hd_interrupt: 0x13138
+  __ctmp: 0x1e210
+  _system_call: 0x7418
+  _nr_buffers: 0x1a918
+  __exit: 0x16e14
+  _strcat: 0x16f84
+  __edata: 0x1d198
+  _strcmp: 0x16fd4
+  _double_fault: 0x8e6e
+  _strchr: 0x17024
+  _strlen: 0x17134
+  _strcpy: 0x16f48
+  _last_pid: 0x1929c
+  _get_hash_table: 0xcd5c
+  _blk_dev: 0x1a968
+  _rs2_interrupt: 0x168dc
+  _timer_interrupt: 0x74f4
+  _setup_rw_floppy: 0x11420
+  _sys_call_table: 0x1802c
+  _math_error: 0x16dfc
+  _rd_load: 0x140b4
+  _find_empty_process: 0x93d4
+  _tty_write: 0x149a0
+  _pg_dir: 0x0
+  _open_namei: 0xf4cc
+  _rs1_interrupt: 0x168d4
+  _last_task_used_math: 0x19158
+  _copy_process: 0x9024
+  _rd_length: 0x1ab1c
+  _parallel_interrupt: 0x75c6
+  _do_timer: 0x70a4
+  _rd_init: 0x13fa0
+  _ll_rw_block: 0x10eec
+  _printk: 0x94a4
+  _invalidate_buffers: 0xcba0
+  _floppy_interrupt: 0x7590
+  _unexpected_floppy_interrupt: 0x123c8
+  _new_inode: 0x10784
+  _floppy_deselect: 0x10fcc
+  __etext: 0x18000
+  _tty_read: 0x1470c
+  _sys_sgetmask: 0xa71c
+  __ctype: 0x1d094
+  _strrchr: 0x17044
+  _sys_getpid: 0x7228
+  _sys_chroot: 0xb9dc
+  _do_double_fault: 0x7660
+  _strpbrk: 0x170cc
+  _tty_init: 0x14268
+  _file_write: 0xdebc
+  _sys_getuid: 0x7240
+  _current: 0x19154
+  _jiffies: 0x1914c
+  _divide_error: 0x8dec
+  _get_super: 0xd388
+  _do_signal: 0xa884
+  _file_read: 0xdda0
+  _tty_table: 0x1ab20
+  _sys_mpx: 0x9c30
+  _strncpy: 0x16f60
+  _sys_access: 0xb8ec
+  _chr_dev_init: 0x14b88
+  _start_buffer: 0x1a910
+  _user_stack: 0x1e214
+  _tty_intr: 0x14274
+  _write_verify: 0xb0b8
+  _coprocessor_error: 0x7494
+  _do_coprocessor_error: 0x88f8
+  _sys_dup: 0x109ac
+  _strncat: 0x16fa8
+  _get_empty_inode: 0xc520
+  _sys_brk: 0x9e3c
+  _do_general_protection: 0x77c0
+  _general_protection: 0x8eba
+  _strncmp: 0x16ff8
+  _sys_getgid: 0x7260
+  _overflow: 0x8e36
+  _strcspn: 0x17098
+  _setsid: 0x16eb4
+  _sync_dev: 0xca90
+  _do_int3: 0x7af4
+  _new_block: 0x10430
+  _rs_write: 0x168ac
+  _file_table: 0x1f214
+  _read_pipe: 0xebdc
+  _tty_ioctl: 0x169e0
+  _sys_sigaction: 0xa7b4
+  _do_divide_error: 0x7918
+  _sys_kill: 0xa01c
+  _memmove: 0x171e4
+  _sys_lock: 0x9c28
+  _sys_link: 0x1008c
+  _wait_on_floppy_select: 0x1aa84
+  _sys_nice: 0x7280
+  _sys_gtty: 0x9ae4
+  _do_exit: 0xa2a8
+  _kernel_mktime: 0xa980
+  _wait_for_keypress: 0x142b0
+  _sys_exit: 0xa534
+  _current_DOR: 0x19294
+  _sleep_on: 0x6cc0
+  _sys_open: 0xbb04
+  _device_not_available: 0x74b8
+  _do_device_not_available: 0x821c
+  _sys_fork: 0x753c
+  _invalid_TSS: 0x8ea5
+  _rd_start: 0x1f614
+  _sys_acct: 0x9c18
+  _sys_ssetmask: 0xa728
+  _do_debug: 0x7cb8
+  _block_read: 0xdb28
+  _sys_dup2: 0x1098c
+  __end: 0x1fe00
+  _sys_stty: 0x9adc
+  _do_invalid_TSS: 0x84dc
+  _do_no_page: 0xb48c
+  _sys_getpgrp: 0x9ef8
+  _sys_sync: 0xca28
+  _sys_prof: 0x9af4
+  _write: 0x16e6c
+  _reserved: 0x8e52
+  _sys_stat: 0xe074
+  _wait_for_request: 0x1a964
+  _mount_root: 0xd8e0
+  _write_pipe: 0xecbc
+  _sys_getppid: 0x7234
+  _do_rd_request: 0x13e10
+  _sys_mkdir: 0xf89c
+  _startup_time: 0x19150
+  _memset: 0x1726c
+  _sys_setreuid: 0x9c78
+  _sys_creat: 0xbcd0
+  _verify_area: 0x8ec4
+  _sys_time: 0x9c40
+  _sys_mknod: 0xf718
+  _sys_break: 0x9acc
+  _sys_pipe: 0xedb4
+  _sys_phys: 0x9c20
+  _sys_read: 0xbe30
+  _do_nmi: 0x7b64
+  _do_hd_request: 0x13684
+  _sys_fstat: 0xe0ac
+  _memcpy: 0x171cc
+  _sys_ioctl: 0x10a98
+  _sys_getegid: 0x7270
+  _sys_ptrace: 0x9ad4
+  _do_overflow: 0x7e0c
+  _free_page_tables: 0xab14
+  _sys_setregid: 0x9afc
+  ____strtok: 0x1f618
+  _math_emulate: 0x16d90
+  _beepcount: 0x1d070
+  _do_coprocessor_segment_overrun: 0x8384
+  _coprocessor_segment_overrun: 0x8e4b
+  _memchr: 0x17240
+  _floppy_off: 0x6f44
+  _do_fd_request: 0x126d8
+  _block_write: 0xda38
+  _memcmp: 0x1721c
+  _rw_char: 0xdd5c
+  _ROOT_DEV: 0x1a91c
+  _sys_mount: 0xd7a4
+  _do_floppy_timer: 0x6f54
+  _request: 0x1f61c
+  _wake_up: 0x6d70
+  _sys_ftime: 0x9ac4
+  _copy_to_cooked: 0x142f4
+  _waitpid: 0x16ef4
+  _free_block: 0x102ac
+  _inode_table: 0x1a20c
+  _get_empty_page: 0xb1b0
+  _sys_geteuid: 0x7250
+  _math_state_restore: 0x6b30
+  _breada: 0xd1d0
+  _panic: 0x9468
+  _do_bounds: 0x7f60
+  _do_floppy: 0x1a9a0
+  _un_wp_page: 0xaf18
+  _brelse: 0xd004
+  _sys_rename: 0x9aec
+  _etext: 0x18000
+  _execve: 0x16ecc
+  _sys_setpgid: 0x9e70
+  _invalid_op: 0x8e44
+  _selected: 0x1aa83
+  _do_stack_segment: 0x8798
+  _stack_segment: 0x8eb3
+  _do_hd: 0x1aa88
+  _copy_page_tables: 0xacac
+  _sys_umount: 0xd6bc
+  _sys_lseek: 0xbd70
+  _sys_close: 0xbd00
+  _invalidate_inodes: 0xc068
+  _namei: 0xf40c
+  _sys_waitpid: 0xa54c
+  _sys_alarm: 0x71d4
+  _sys_chmod: 0xba38
+  _do_invalid_op: 0x80bc
+  _free_inode: 0x10658
+  _sys_chdir: 0xb980
+  _sys_fcntl: 0x109bc
+  _trap_init: 0x8bbc
+  _sys_chown: 0xbaac
+  _task: 0x1915c
+  _interruptible_sleep_on: 0x6d08
+  _csi_m: 0x14d9c
+  _get_pipe_inode: 0xc634
+  _do_segment_not_present: 0x863c
+  _segment_not_present: 0x8eac
+  _ticks_to_floppy_on: 0x6d9c
+  _wait: 0x16f1c
+  _calc_mem: 0xb7c8
+  _sys_unlink: 0xfeec
+  _hd_info: 0x1aa94
+  _sys_ustat: 0xb884
+  _hd_init: 0x13d10
+  _errno: 0x1fa9c
+  _sys_ulimit: 0x9c38
+  _bread: 0xd074
+  _do_reserved: 0x8a70
+  _rs_init: 0x1678c
+  _mem_init: 0xb74c
+  _irq13: 0x8e59
+  _sys_stime: 0x9dac
+  _floppy_on: 0x6e40
+  _iget: 0xc6a4
+  _sys_signal: 0xa748
+  _main: 0x664c
+  _bread_page: 0xd0e0
+  _init: 0x6884
+  _add_timer: 0x6ff8
+  _sys_setsid: 0x9f04
+  _debug: 0x8e21
+  _close: 0x16e4c
+  _sys_setuid: 0x9d10
+  _sys_utime: 0xb88c
+  _show_stat: 0x6ac0
+  _edata: 0x1d198
+  _sched_init: 0x72bc
+  _end: 0x1fe00
+  _gdt: 0x5cb8
+  _super_block: 0x1faa0
+  _sync_inodes: 0xc0ec
+  _idt: 0x54b8
+  _sys_write: 0xbf60
+  _int3: 0x8e2f
+
+Local symbols of boot/head.o:
+
+  startup_32: 0x0
+  setup_idt: 0x6f
+  setup_gdt: 0x9f
+  check_x87: 0x5a
+  after_page_tables: 0x5400
+  ignore_int: 0x5428
+  rp_sidt: 0x8c
+  idt_descr: 0x54aa
+  gdt_descr: 0x54b2
+  pg0: 0x1000
+  pg1: 0x2000
+  pg2: 0x3000
+  pg3: 0x4000
+  setup_paging: 0x5450
+  int_msg: 0x5414
+
+Local symbols of init/main.o:
+
+  gcc_compiled.: 0x64b8
+  _time_init: 0x64b8
+  _memory_end: 0x18000
+  _buffer_memory_end: 0x18004
+  _main_memory_start: 0x18008
+  _printf: 0x67b0
+  _printbuf: 0x1d198
+  _argv_rc: 0x1800c
+  _envp_rc: 0x18014
+  _argv: 0x1801c
+  _envp: 0x18024
+
+Local symbols of kernel/kernel.o:
+
+  sched.o: 0x6a34
+  gcc_compiled.: 0x6a34
+  _init_task: 0x1814c
+  _wait_motor: 0x19264
+  _mon_timer: 0x19274
+  _moff_timer: 0x19284
+  _next_timer: 0x19298
+  _timer_list: 0x1d598
+  system_call.o: 0x7404
+  SIG_CHLD: 0x11
+  EAX: 0x0
+  EBX: 0x4
+  ECX: 0x8
+  EDX: 0xc
+  FS: 0x10
+  ES: 0x14
+  DS: 0x18
+  EIP: 0x1c
+  CS: 0x20
+  EFLAGS: 0x24
+  OLDESP: 0x28
+  OLDSS: 0x2c
+  state: 0x0
+  counter: 0x4
+  priority: 0x8
+  signal: 0xc
+  sigaction: 0x10
+  blocked: 0x210
+  sa_handler: 0x0
+  sa_mask: 0x4
+  sa_flags: 0x8
+  sa_restorer: 0xc
+  nr_system_calls: 0x48
+  bad_sys_call: 0x7404
+  reschedule: 0x740c
+  ret_from_sys_call: 0x744d
+  traps.o: 0x75d0
+  gcc_compiled.: 0x75d0
+  asm.o: 0x8dec
+  no_error_code: 0x8df1
+  error_code: 0x8e73
+  fork.o: 0x8ec4
+  gcc_compiled.: 0x8ec4
+  panic.o: 0x9434
+  gcc_compiled.: 0x9434
+  printk.o: 0x94a4
+  gcc_compiled.: 0x94a4
+  _buf: 0x1d898
+  vsprintf.o: 0x94dc
+  gcc_compiled.: 0x94dc
+  _number: 0x9528
+  sys.o: 0x9ac4
+  gcc_compiled.: 0x9ac4
+  _thisname.0: 0x192a0
+  exit.o: 0x9fb0
+  gcc_compiled.: 0x9fb0
+  signal.o: 0xa71c
+  gcc_compiled.: 0xa71c
+  mktime.o: 0xa980
+  gcc_compiled.: 0xa980
+  _month: 0x192d0
+
+Local symbols of mm/mm.o:
+
+  memory.o: 0xa9f8
+  gcc_compiled.: 0xa9f8
+  _HIGH_MEMORY: 0x19304
+  _mem_map: 0x19308
+  _try_to_share: 0xb344
+  page.o: 0xb84c
+
+Local symbols of fs/fs.o:
+
+  open.o: 0xb884
+  gcc_compiled.: 0xb884
+  read_write.o: 0xbd70
+  gcc_compiled.: 0xbd70
+  inode.o: 0xc048
+  gcc_compiled.: 0xc048
+  _write_inode: 0xc920
+  __bmap: 0xc168
+  _last_inode.0: 0x1a90c
+  _read_inode: 0xc810
+  file_table.o: 0xca28
+  gcc_compiled.: 0xca28
+  buffer.o: 0xca28
+  gcc_compiled.: 0xca28
+  _buffer_wait: 0x1a914
+  _find_buffer: 0xcd1c
+  _free_list: 0x1dc98
+  super.o: 0xd324
+  gcc_compiled.: 0xd324
+  _lock_super: 0xd324
+  _free_super: 0xd34c
+  _wait_on_super: 0xd364
+  _read_super: 0xd4ac
+  block_dev.o: 0xda38
+  gcc_compiled.: 0xda38
+  char_dev.o: 0xdbf4
+  gcc_compiled.: 0xdbf4
+  _rw_ttyx: 0xdbf4
+  _rw_tty: 0xdc20
+  _rw_ram: 0xdc5c
+  _rw_mem: 0xdc64
+  _rw_kmem: 0xdc6c
+  _rw_port: 0xdc74
+  _rw_memory: 0xdcd0
+  _crw_table: 0x1a920
+  file_dev.o: 0xdda0
+  gcc_compiled.: 0xdda0
+  stat.o: 0xdff8
+  gcc_compiled.: 0xdff8
+  _cp_stat: 0xdff8
+  exec.o: 0xe0e8
+  gcc_compiled.: 0xe0e8
+  _create_tables: 0xe0e8
+  _count: 0xe198
+  _copy_strings: 0xe1c8
+  _change_ldt: 0xe2fc
+  pipe.o: 0xebdc
+  gcc_compiled.: 0xebdc
+  namei.o: 0xeef8
+  gcc_compiled.: 0xeef8
+  _permission: 0xeef8
+  _match: 0xef6c
+  _find_entry: 0xefbc
+  _add_entry: 0xf12c
+  _get_dir: 0xf284
+  _dir_namei: 0xf3c8
+  _empty_dir: 0xfb3c
+  bitmap.o: 0x10200
+  gcc_compiled.: 0x10200
+  fcntl.o: 0x10904
+  gcc_compiled.: 0x10904
+  _dupfd: 0x10904
+  ioctl.o: 0x10a98
+  gcc_compiled.: 0x10a98
+  _ioctl_table: 0x1a940
+  truncate.o: 0x10b28
+  gcc_compiled.: 0x10b28
+  _free_ind: 0x10b28
+  _free_dind: 0x10b8c
+
+Local symbols of kernel/blk_drv/blk_drv.a(ll_rw_blk.o):
+
+  gcc_compiled.: 0x10c8c
+  _make_request: 0x10cd8
+
+Local symbols of kernel/blk_drv/blk_drv.a(floppy.o):
+
+  gcc_compiled.: 0x10f58
+  _recalibrate: 0x1a9a4
+  _reset: 0x1a9a8
+  _seek: 0x1a9ac
+  _floppy_type: 0x1a9b0
+  _cur_spec1: 0x1aa70
+  _cur_rate: 0x1aa74
+  _floppy: 0x1aa78
+  _current_drive: 0x1aa7c
+  _sector: 0x1aa7d
+  _head: 0x1aa7e
+  _track: 0x1aa7f
+  _seek_track: 0x1aa80
+  _current_track: 0x1aa81
+  _command: 0x1aa82
+  _bad_flp_intr: 0x11098
+  _rw_interrupt: 0x111d0
+  _reply_buffer: 0x1dca0
+  _seek_interrupt: 0x117b8
+  _transfer: 0x11c64
+  _recal_interrupt: 0x122c0
+  _reset_interrupt: 0x124c4
+  _floppy_on_interrupt: 0x12adc
+
+Local symbols of kernel/blk_drv/blk_drv.a(hd.o):
+
+  gcc_compiled.: 0x12b2c
+  _recalibrate: 0x1aa8c
+  _reset: 0x1aa90
+  _NR_HD: 0x1aac4
+  _hd: 0x1aac8
+  _callable.0: 0x1ab18
+  _reset_hd: 0x12f54
+  _recal_intr: 0x13534
+  _read_intr: 0x13148
+  _write_intr: 0x13350
+
+Local symbols of kernel/blk_drv/blk_drv.a(ramdisk.o):
+
+  gcc_compiled.: 0x13d70
+
+Local symbols of kernel/chr_drv/chr_drv.a(tty_io.o):
+
+  gcc_compiled.: 0x14268
+  _cr_flag.0: 0x1d058
+
+Local symbols of kernel/chr_drv/chr_drv.a(console.o):
+
+  gcc_compiled.: 0x14b8c
+  _state: 0x1d05c
+  _ques: 0x1d060
+  _attr: 0x1d064
+  _scrup: 0x14b8c
+  _video_type: 0x1dd22
+  _top: 0x1dcef
+  _video_num_lines: 0x1dd16
+  _bottom: 0x1dceb
+  _video_size_row: 0x1dd1a
+  _origin: 0x1dd03
+  _pos: 0x1dcfb
+  _scr_end: 0x1dcff
+  _video_mem_end: 0x1dd0d
+  _video_num_columns: 0x1dd1e
+  _video_erase_char: 0x1dd07
+  _video_mem_start: 0x1dd11
+  _video_port_reg: 0x1dd0b
+  _video_port_val: 0x1dd09
+  _npar: 0x1dce7
+  _par: 0x1dca7
+  _csi_L: 0x14e6c
+  _y: 0x1dcf3
+  _saved_x: 0x1d068
+  _saved_y: 0x1d06c
+  _x: 0x1dcf7
+  _sysbeep: 0x15f58
+  _video_page: 0x1dd15
+
+Local symbols of kernel/chr_drv/chr_drv.a(keyboard.o):
+
+  size: 0x400
+  head: 0x4
+  tail: 0x8
+  proc_list: 0xc
+  buf: 0x10
+  mode: 0x15fa8
+  leds: 0x15fa9
+  e0: 0x15faa
+  set_e0: 0x15fff
+  set_e1: 0x16008
+  key_table: 0x1636e
+  e0_e1: 0x15fd4
+  put_queue: 0x16011
+  ctrl: 0x1604a
+  alt: 0x1604e
+  unctrl: 0x16062
+  unalt: 0x16066
+  lshift: 0x1607c
+  unlshift: 0x16084
+  rshift: 0x1608c
+  unrshift: 0x16094
+  caps: 0x1609c
+  set_leds: 0x160be
+  kb_wait: 0x1676e
+  uncaps: 0x160d5
+  scroll: 0x160dd
+  num: 0x160e6
+  cursor: 0x160ef
+  cur2: 0x1610f
+  reboot: 0x16777
+  cur: 0x16138
+  num_table: 0x16152
+  cur_table: 0x1615f
+  ok_cur: 0x16144
+  func: 0x1616c
+  end_func: 0x1619c
+  ok_func: 0x16189
+  func_table: 0x1619d
+  key_map: 0x161cd
+  shift_map: 0x1622e
+  alt_map: 0x1628f
+  do_self: 0x162f0
+  none: 0x16358
+  minus: 0x16359
+  die: 0x16789
+
+Local symbols of kernel/chr_drv/chr_drv.a(serial.o):
+
+  gcc_compiled.: 0x1678c
+
+Local symbols of kernel/chr_drv/chr_drv.a(rs_io.o):
+
+  size: 0x400
+  rs_addr: 0x0
+  head: 0x4
+  tail: 0x8
+  proc_list: 0xc
+  buf: 0x10
+  startup: 0x100
+  rs_int: 0x168e1
+  rep_int: 0x168f9
+  end: 0x16916
+  jmp_table: 0x16924
+  modem_status: 0x16934
+  write_char: 0x16974
+  read_char: 0x16944
+  line_status: 0x1693c
+  write_buffer_empty: 0x169b4
+
+Local symbols of kernel/chr_drv/chr_drv.a(tty_ioctl.o):
+
+  gcc_compiled.: 0x169cc
+  _quotient: 0x1d074
+
+Local symbols of kernel/math/math.a(math_emulate.o):
+
+  gcc_compiled.: 0x16d40
+
+Local symbols of lib/lib.a(ctype.o):
+
+  gcc_compiled.: 0x16e14
+
+Local symbols of lib/lib.a(_exit.o):
+
+  gcc_compiled.: 0x16e14
+
+Local symbols of lib/lib.a(open.o):
+
+  gcc_compiled.: 0x16e24
+
+Local symbols of lib/lib.a(close.o):
+
+  gcc_compiled.: 0x16e4c
+
+Local symbols of lib/lib.a(write.o):
+
+  gcc_compiled.: 0x16e6c
+
+Local symbols of lib/lib.a(dup.o):
+
+  gcc_compiled.: 0x16e94
+
+Local symbols of lib/lib.a(setsid.o):
+
+  gcc_compiled.: 0x16eb4
+
+Local symbols of lib/lib.a(execve.o):
+
+  gcc_compiled.: 0x16ecc
+
+Local symbols of lib/lib.a(wait.o):
+
+  gcc_compiled.: 0x16ef4
+
+Local symbols of lib/lib.a(string.o):
+
+  gcc_compiled.: 0x16f48
