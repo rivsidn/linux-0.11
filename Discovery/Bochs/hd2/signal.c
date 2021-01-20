@@ -24,8 +24,6 @@ int main()
 {
 	while (1) {
 		do_catch(SIGINT);
-		sleep(50);
-		kill(getpid(), SIGINT);
 	}
 
 	return 0;
