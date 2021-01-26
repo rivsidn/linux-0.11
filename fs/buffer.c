@@ -26,6 +26,8 @@
 #include <asm/system.h>
 #include <asm/io.h>
 
+//链接程序ld生成用于表示内核代码末端的变量，可以在System.map符号表中找到.
+//内核代码从物理地址0 开始，所以此处的end 就是内核代码的结束地址.
 extern int end;
 struct buffer_head * start_buffer = (struct buffer_head *) &end;
 struct buffer_head * hash_table[NR_HASH];
