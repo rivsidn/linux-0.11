@@ -113,20 +113,21 @@ is_disk1:
 	cli			! no interrupts allowed !
 
 ! first we move the system to it's rightful place
+! 将system 移动到恰当的位置
 
 	mov	ax,#0x0000
 	cld			! 'direction'=0, movs moves forward
 do_move:
-	mov	es,ax		! destination segment
+	mov	es,ax		! destination segment(目的es:di开始时为0:0)
 	add	ax,#0x1000
 	cmp	ax,#0x9000
 	jz	end_move
 	mov	ds,ax		! source segment
-	sub	di,di
-	sub	si,si
+	sub	di,di		! di 清零
+	sub	si,si		! si 清零
 	mov 	cx,#0x8000
 	rep
-	movsw
+	movsw			! ds:si=>es:di
 	jmp	do_move
 
 ! then we load the segment descriptors
