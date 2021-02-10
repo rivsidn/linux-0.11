@@ -10,6 +10,9 @@
  * NOTE!!! Startup happens at absolute address 0x00000000, which is also where
  * the page directory will exist. The startup code will be overwritten by
  * the page directory.
+ * 
+ * 注意！起始代码为于绝对地址0x00000000处，此处同事也是页目录存在的地方，所以startup代码
+ * 会被页目录覆盖.
  */
 .text
 .globl _idt,_gdt,_pg_dir,_tmp_floppy_area
@@ -28,7 +31,7 @@ startup_32:
 	mov %ax,%es		# reloaded in 'setup_gdt'
 	mov %ax,%fs
 	mov %ax,%gs
-	lss _stack_start,%esp	# TODO: 为什么此处可以访问_stack_start，编译好的代码是如何分段的？
+	lss _stack_start,%esp
 	xorl %eax,%eax
 1:	incl %eax		# check that A20 really IS enabled
 	movl %eax,0x000000	# loop forever if it isn't
@@ -96,7 +99,7 @@ rp_sidt:
 	addl $8,%edi
 	dec %ecx
 	jne rp_sidt
-	lidt idt_descr
+	lidt idt_descr		/* 加载中断描述符表 */
 	ret
 
 /*
@@ -217,10 +220,12 @@ setup_paging:
 	movl $pg2+7,_pg_dir+8		/*  --------- " " --------- */
 	movl $pg3+7,_pg_dir+12		/*  --------- " " --------- */
 # 设置页表
+# 建立16M 的页表映射
 	movl $pg3+4092,%edi
 	movl $0xfff007,%eax		/*  16Mb - 4096 + 7 (r/w user,p) */
 	std
 1:	stosl			/* fill pages backwards - more efficient :-) */
+				/* 将eax内容填充到es:edi 中 */
 	subl $0x1000,%eax
 	jge 1b
 	xorl %eax,%eax		/* pg_dir is at 0x0000 */
@@ -228,7 +233,9 @@ setup_paging:
 	movl %cr0,%eax
 	orl $0x80000000,%eax
 	movl %eax,%cr0		/* set paging (PG) bit */
+				/* 设置分页(PG)标识 */
 	ret			/* this also flushes prefetch-queue */
+				/* 该操作也会同时刷新预处理队列 */
 
 .align 2
 .word 0

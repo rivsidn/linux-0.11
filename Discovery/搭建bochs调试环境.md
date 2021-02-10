@@ -108,9 +108,7 @@ ata0-master: type=disk, path="/home/rivsidn/gitHub/linux-0.11/Discovery/linux-0.
 
 
 
-## 附录
-
-### 查看磁盘镜像内容
+## 附录A-查看磁盘镜像
 
 * 查看不含分区的磁盘镜像内容
 
